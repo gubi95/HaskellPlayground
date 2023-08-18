@@ -27,6 +27,7 @@ library
   exposed-modules:
       EquationParser
       EquationSolver
+      MaybeToEither
       Types
   other-modules:
       Paths_EquationSolver

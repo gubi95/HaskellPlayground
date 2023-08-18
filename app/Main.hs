@@ -10,6 +10,6 @@ main = do
   let result = solve rawExpression EquationParser.parse
 
   case result of
-    Just score -> do
-      print ("Score: " ++ show score)
-    Nothing -> print "Error"
+    Right score -> do
+      print $ "Score: " ++ show score
+    Left e -> print $ "Error: " ++ e

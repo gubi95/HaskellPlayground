@@ -19,12 +19,12 @@ popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output) = do
         (createParsedToken rawOperator)
     _ -> defaultReturn
 
-popOperatorsAndAddToOutputUntilOperatorIsRightBracket :: Stack Char -> ParserOutput -> Either String (Stack Char, ParserOutput)
-popOperatorsAndAddToOutputUntilOperatorIsRightBracket stack output = do
+popOperatorForRightBracket :: Stack Char -> ParserOutput -> Either String (Stack Char, ParserOutput)
+popOperatorForRightBracket stack output = do
   let defaultReturn = Right (stack, output)
 
-  maybe
-    defaultReturn
+  either
+    (const defaultReturn)
     ( \(newStack, operator) ->
         case (newStack, operator) of
           (_, '(') -> defaultReturn
@@ -32,7 +32,7 @@ popOperatorsAndAddToOutputUntilOperatorIsRightBracket stack output = do
             parsedOperator <- createParsedToken operator
             Right (newStack, output ++ [parsedOperator])
     )
-    (stackPop stack)
+    (maybeToEither "Ignored" $ stackPop stack)
 
 processChar :: Char -> (Stack Char, ParserOutput) -> Either String (Stack Char, ParserOutput)
 processChar c (stack, output) = do
@@ -41,12 +41,13 @@ processChar c (stack, output) = do
     (_, operator) | operator `elem` [Right Plus, Right Minus] -> do
       (newStack, newOutput) <- popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output)
       Right (stackPush newStack c, newOutput)
-    (leftBracket, _) | leftBracket == '(' -> Right (stackPush stack leftBracket, output)
+    ('(', _) -> Right (stackPush stack '(', output)
     (')', _) -> do
-      (newStack, newOutput) <- popOperatorsAndAddToOutputUntilOperatorIsRightBracket stack output
+      (newStack, newOutput) <- popOperatorForRightBracket stack output
       stackWithoutRightBracket <- fst <$> (maybeToEither "Stack is already empty when trying to pop right bracktet" . stackPop $ newStack)
       Right (stackWithoutRightBracket, newOutput)
-    (character, _) -> Left $ "Character: " ++ [character] ++ "cannot be processed"
+    (character, Left e) -> Left $ "Character: " ++ [character] ++ " cannot be processed. Details: " ++ e
+    (character, Right _) -> Left $ "Character: " ++ [character] ++ " cannot be handled as token"
 
 extractExpression :: (Stack Char, ParserOutput) -> RawExpression -> Either String (Stack Char, ParserOutput)
 extractExpression input [] = Right input

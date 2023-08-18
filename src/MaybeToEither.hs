@@ -1,4 +1,4 @@
-module MaybeToEither (maybeToEither) where 
+module MaybeToEither (maybeToEither) where
 
 maybeToEither :: String -> Maybe a -> Either String a
 maybeToEither e m =

@@ -36,18 +36,20 @@ popOperatorForRightBracket stack output = do
 
 processChar :: Char -> (Stack Char, ParserOutput) -> Either String (Stack Char, ParserOutput)
 processChar c (stack, output) = do
+  let processOperator () = do
+        (newStack, newOutput) <- popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output)
+        Right (stackPush newStack c, newOutput)
+
   case (c, createParsedToken c) of
     (_, Right (Number number)) -> Right (stack, output ++ [Number number])
-    (_, operator) | operator `elem` [Right Plus, Right Minus] -> do
-      (newStack, newOutput) <- popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output)
-      Right (stackPush newStack c, newOutput)
+    (_, Right Plus) -> processOperator ()
+    (_, Right Minus) -> processOperator ()
     ('(', _) -> Right (stackPush stack '(', output)
     (')', _) -> do
       (newStack, newOutput) <- popOperatorForRightBracket stack output
       stackWithoutRightBracket <- fst <$> (maybeToEither "Stack is already empty when trying to pop right bracktet" . stackPop $ newStack)
       Right (stackWithoutRightBracket, newOutput)
     (character, Left e) -> Left $ "Character: " ++ [character] ++ " cannot be processed. Details: " ++ e
-    (character, Right _) -> Left $ "Character: " ++ [character] ++ " cannot be handled as token"
 
 extractExpression :: (Stack Char, ParserOutput) -> RawExpression -> Either String (Stack Char, ParserOutput)
 extractExpression input [] = Right input

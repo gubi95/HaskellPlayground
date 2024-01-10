@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -35,7 +35,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      Stack ==0.4.0
+      HUnit ==1.6.2.0
+    , Stack ==0.4.0
     , base >=4.7 && <5
   default-language: Haskell2010
 
@@ -48,6 +49,7 @@ executable EquationSolver-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       EquationSolver
+    , HUnit ==1.6.2.0
     , Stack ==0.4.0
     , base >=4.7 && <5
   default-language: Haskell2010
@@ -62,6 +64,7 @@ test-suite EquationSolver-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       EquationSolver
+    , HUnit ==1.6.2.0
     , Stack ==0.4.0
     , base >=4.7 && <5
   default-language: Haskell2010

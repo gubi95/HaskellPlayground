@@ -3,61 +3,73 @@ module EquationParser
   )
 where
 
+import Control.Applicative as List
 import Data.Stack (Stack, stackNew, stackPop, stackPush)
 import MaybeToEither (maybeToEither)
 import Types
+  ( Operator (..),
+    ParsedToken (..),
+    ParserOutput,
+    RawExpression,
+    createNumberParsedToken,
+    createParsedToken,
+  )
 
-popOperatorsAndAddToOutputUntilOperatorIsFound :: (Stack Char, ParserOutput) -> Either String (Stack Char, ParserOutput)
-popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output) = do
-  let defaultReturn = Right (stack, output)
+type NumberAccumulator = String
 
+popAndAddToOutputUntilOperatorIsFound :: (Stack ParsedToken, ParserOutput, NumberAccumulator) -> (Stack ParsedToken, ParserOutput, NumberAccumulator)
+popAndAddToOutputUntilOperatorIsFound (stack, output, acc) =
   case stackPop stack of
-    Just (newStack, rawOperator) ->
-      either
-        (const defaultReturn)
-        (\parsedToken -> popOperatorsAndAddToOutputUntilOperatorIsFound (newStack, output ++ [parsedToken]))
-        (createParsedToken rawOperator)
-    _ -> defaultReturn
+    Just (newStack, Operator operator) ->
+      popAndAddToOutputUntilOperatorIsFound (newStack, output ++ [operator], acc)
+    _ -> (stack, output, acc)
 
-popOperatorForRightBracket :: Stack Char -> ParserOutput -> Either String (Stack Char, ParserOutput)
-popOperatorForRightBracket stack output = do
-  let defaultReturn = Right (stack, output)
+popOperatorForRightBracket :: (Stack ParsedToken, ParserOutput, NumberAccumulator) -> (Stack ParsedToken, ParserOutput, NumberAccumulator)
+popOperatorForRightBracket (stack, output, acc) = do
+  case stackPop stack of
+    (Just (newStack, Operator operator)) -> (newStack, output ++ [operator], acc)
+    _ -> (stack, output, acc)
 
-  either
-    (const defaultReturn)
-    ( \(newStack, operator) ->
-        case (newStack, operator) of
-          (_, '(') -> defaultReturn
+processsToken :: ParsedToken -> (Stack ParsedToken, ParserOutput, NumberAccumulator) -> Either String (Stack ParsedToken, ParserOutput, NumberAccumulator)
+processsToken token (stack, output, numberAcc) = do
+  let processNumberFromAcc currentStack currentOutput =
+        case numberAcc of
+          [] ->
+            Right (currentStack, currentOutput, [])
           _ -> do
-            parsedOperator <- createParsedToken operator
-            Right (newStack, output ++ [parsedOperator])
-    )
-    (maybeToEither "Ignored" $ stackPop stack)
+            parsedNumber <- createNumberParsedToken numberAcc
+            Right (currentStack, currentOutput ++ [parsedNumber], [])
 
-processChar :: Char -> (Stack Char, ParserOutput) -> Either String (Stack Char, ParserOutput)
-processChar c (stack, output) = do
   let processOperator () = do
-        (newStack, newOutput) <- popOperatorsAndAddToOutputUntilOperatorIsFound (stack, output)
-        Right (stackPush newStack c, newOutput)
+        (newStack, newOutput, newNumberAcc) <- popAndAddToOutputUntilOperatorIsFound <$> processNumberFromAcc stack output
+        Right (stackPush newStack token, newOutput, newNumberAcc)
 
-  case (c, createParsedToken c) of
-    (_, Right (Number number)) -> Right (stack, output ++ [Number number])
-    (_, Right Plus) -> processOperator ()
-    (_, Right Minus) -> processOperator ()
-    ('(', _) -> Right (stackPush stack '(', output)
-    (')', _) -> do
-      (newStack, newOutput) <- popOperatorForRightBracket stack output
-      stackWithoutRightBracket <- fst <$> (maybeToEither "Stack is already empty when trying to pop right bracktet" . stackPop $ newStack)
-      Right (stackWithoutRightBracket, newOutput)
-    (character, Left e) -> Left $ "Character: " ++ [character] ++ " cannot be processed. Details: " ++ e
+  case token of
+    Operator operator ->
+      case operator of
+        Number digit -> Right (stack, output, numberAcc ++ show digit)
+        Plus -> processOperator ()
+        Minus -> processOperator ()
+    LeftBracket -> do
+      (newStack, newOutput, newNumberAcc) <- processNumberFromAcc stack output
+      Right (stackPush newStack LeftBracket, newOutput, newNumberAcc)
+    RightBracket -> do
+      (newStack, newOutput, newNumberAcc) <- popOperatorForRightBracket <$> processNumberFromAcc stack output
+      stackWithoutRightBracket <- fst <$> (maybeToEither "Stack is already empty when trying to pop right bracket" . stackPop $ newStack)
+      Right (stackWithoutRightBracket, newOutput, newNumberAcc)
 
-extractExpression :: (Stack Char, ParserOutput) -> RawExpression -> Either String (Stack Char, ParserOutput)
+extractExpression :: (Stack ParsedToken, ParserOutput, NumberAccumulator) -> [ParsedToken] -> Either String (Stack ParsedToken, ParserOutput, NumberAccumulator)
+extractExpression (stack, output, numberAcc : numberAccN) [] = do
+  parsedNumber <- createNumberParsedToken (numberAcc : numberAccN)
+  Right (stack, output ++ [parsedNumber], [])
 extractExpression input [] = Right input
 extractExpression input (first : rest) = do
-  processCharOutput <- processChar first input
-  extractExpressionOutput <- extractExpression processCharOutput rest
-  popOperatorsAndAddToOutputUntilOperatorIsFound extractExpressionOutput
+  (chars, output, newNumberAcc) <- processsToken first input
+  extractExpressionOutput <- extractExpression (chars, output, newNumberAcc) rest
+  Right $ popAndAddToOutputUntilOperatorIsFound extractExpressionOutput
 
 parse :: RawExpression -> Either String ParserOutput
 parse rawExpression = do
-  snd <$> extractExpression (stackNew, []) rawExpression
+  tokens <- mapM createParsedToken rawExpression
+  (_, output, _) <- extractExpression (stackNew, List.empty, List.empty) tokens
+  Right output

@@ -1,6 +1,6 @@
 module MaybeToEither (maybeToEither) where
 
-maybeToEither :: String -> Maybe a -> Either String a
+maybeToEither :: e -> Maybe a -> Either e a
 maybeToEither e m =
   case m of
     Just value -> Right value

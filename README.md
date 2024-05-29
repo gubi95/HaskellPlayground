@@ -1,3 +1,9 @@
+Repo contains following `playground` Haskell projects:
+
+# Tree Drawer
+
+Allows to create binary tree and draw it using `level` traversal from top to bottom
+
 # RPN Equation Solver
 
 Solver is able to convert infix notation to postfix notation and then calculate score using Reverse Polish Notation

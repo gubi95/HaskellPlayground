@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       BinaryTree
+      Queue
       TreeDrawer
   other-modules:
       Paths_TreeDrawer

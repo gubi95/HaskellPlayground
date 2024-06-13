@@ -1,0 +1,76 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           SkyScannerSimulator
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/SkyScannerSimulator#readme>
+homepage:       https://github.com/githubuser/SkyScannerSimulator#readme
+bug-reports:    https://github.com/githubuser/SkyScannerSimulator/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/SkyScannerSimulator
+
+library
+  exposed-modules:
+      Lib
+      GetSchedule
+      Rooting
+  other-modules:
+      Paths_SkyScannerSimulator
+  autogen-modules:
+      Paths_SkyScannerSimulator
+  hs-source-dirs:
+      src
+      src/Simulator.Api
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson >=2.1.2.1
+    , base >=4.7 && <5
+    , scotty ==0.20.1
+  default-language: Haskell2010
+
+executable SkyScannerSimulator-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_SkyScannerSimulator
+  autogen-modules:
+      Paths_SkyScannerSimulator
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SkyScannerSimulator
+    , aeson >=2.1.2.1
+    , base >=4.7 && <5
+    , scotty ==0.20.1
+  default-language: Haskell2010
+
+test-suite SkyScannerSimulator-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_SkyScannerSimulator
+  autogen-modules:
+      Paths_SkyScannerSimulator
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SkyScannerSimulator
+    , aeson >=2.1.2.1
+    , base >=4.7 && <5
+    , scotty ==0.20.1
+  default-language: Haskell2010

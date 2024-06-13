@@ -2,7 +2,7 @@ Repo contains following `playground` Haskell projects:
 
 # Tree Drawer
 
-Allows to create binary tree and draw it using `level` traversal from top to bottom.
+Allows to create binary tree and draw it using `level` traversal from top to bottom
 
 # RPN Equation Solver
 

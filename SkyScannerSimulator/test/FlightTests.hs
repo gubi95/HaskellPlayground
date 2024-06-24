@@ -2,6 +2,7 @@ module FlightTests (tests) where
 
 import Coordinates
 import Flight
+import FlightAdapter
 import Plane
 import Test.HUnit
 
@@ -42,9 +43,18 @@ flightShouldReachItsDestinationByTicking =
         assertEqual "Flight should be ended" expectedFlight updatedFlight7
     )
 
+sqlTest :: Test
+sqlTest =
+  TestCase
+    ( do
+        a <- getAllFlights ()
+        print ("result: " ++ show a)
+    )
+
 tests :: Test
 tests =
   TestList
     [ TestLabel "Should calculate remaining flight distance" shouldCalculateRemainingFlightDistance,
-      TestLabel "Flight should reach its destination" flightShouldReachItsDestinationByTicking
+      TestLabel "Flight should reach its destination" flightShouldReachItsDestinationByTicking,
+      TestLabel "sql test" sqlTest
     ]

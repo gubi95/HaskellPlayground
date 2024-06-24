@@ -24,6 +24,8 @@ dependencies:
 - scotty == 0.20.1
 - aeson >= 2.1.2.1
 - HUnit == 1.6.2.0
+- HDBC == 2.4.0.4
+- HDBC-odbc == 2.6.0.0
 
 ghc-options:
 - -Wall
@@ -41,6 +43,7 @@ library:
   - src
   - src/Simulator.Api
   - src/Simulator.Domain
+  - src/Simulator.Adapters.Sql
 
 executables:
   SkyScannerSimulator-exe:

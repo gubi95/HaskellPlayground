@@ -31,6 +31,7 @@ library
       Coordinates
       Flight
       Plane
+      FlightAdapter
   other-modules:
       Paths_SkyScannerSimulator
   autogen-modules:
@@ -39,9 +40,12 @@ library
       src
       src/Simulator.Api
       src/Simulator.Domain
+      src/Simulator.Adapters.Sql
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      HUnit ==1.6.2.0
+      HDBC ==2.4.0.4
+    , HDBC-odbc ==2.6.0.0
+    , HUnit ==1.6.2.0
     , aeson >=2.1.2.1
     , base >=4.7 && <5
     , scotty ==0.20.1
@@ -57,7 +61,9 @@ executable SkyScannerSimulator-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HUnit ==1.6.2.0
+      HDBC ==2.4.0.4
+    , HDBC-odbc ==2.6.0.0
+    , HUnit ==1.6.2.0
     , SkyScannerSimulator
     , aeson >=2.1.2.1
     , base >=4.7 && <5
@@ -76,7 +82,9 @@ test-suite SkyScannerSimulator-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HUnit ==1.6.2.0
+      HDBC ==2.4.0.4
+    , HDBC-odbc ==2.6.0.0
+    , HUnit ==1.6.2.0
     , SkyScannerSimulator
     , aeson >=2.1.2.1
     , base >=4.7 && <5

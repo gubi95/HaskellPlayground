@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: HDBC-odbc-2.6.0.0@sha256:4fbd28f437cb2f1707d77aa81a356870d84407942c89c20c7613f99f3bb0eb5d,2730
+    pantry-tree:
+      sha256: 7f38220f11a62dfeaa114010179d28d851b3cb66ea6d7ba2b9288874c64f8075
+      size: 1823
+  original:
+    hackage: HDBC-odbc-2.6.0.0@sha256:4fbd28f437cb2f1707d77aa81a356870d84407942c89c20c7613f99f3bb0eb5d,2730
 snapshots:
 - completed:
     sha256: 9b43e51f2c54211993d5954da8b49604704d8288103b8d9150a19a703f4e55e7

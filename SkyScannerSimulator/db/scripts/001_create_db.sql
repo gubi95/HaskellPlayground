@@ -12,6 +12,6 @@ CREATE TABLE [Plane] (
 
 GO
 
-INSERT INTO [Plane] ([Name]) VALUES ('Airbus'), ('Boeing'), ('JamboJet')
+INSERT INTO [Plane] ([Name]) VALUES ('Airbus'), ('Boeing'), ('JamboJet'), ('Jet')
 
 GO

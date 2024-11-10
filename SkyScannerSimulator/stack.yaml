@@ -61,8 +61,8 @@ extra-deps:
 # arch: x86_64
 #
 # Extra directories used by Stack for building
-# extra-include-dirs: [/path/to/dir]
-# extra-lib-dirs: [/path/to/dir]
+extra-include-dirs: [/opt/homebrew/Cellar/unixodbc/2.3.12/include]
+extra-lib-dirs: [/opt/homebrew/Cellar/unixodbc/2.3.12/lib]
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor

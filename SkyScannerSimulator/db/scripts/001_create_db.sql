@@ -1,3 +1,17 @@
-CREATE DATABASE [SimulatorService];
+CREATE DATABASE [SimulatorService]
 
-CREATE TABLE [Plane]
+GO
+
+USE [SimulatorService]
+
+GO
+
+CREATE TABLE [Plane] (
+    [Name] NVARCHAR(100) NOT NULL
+)
+
+GO
+
+INSERT INTO [Plane] ([Name]) VALUES ('Airbus'), ('Boeing')
+
+GO

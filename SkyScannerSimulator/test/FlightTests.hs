@@ -5,6 +5,7 @@ import Flight
 import FlightAdapter
 import Plane
 import Test.HUnit
+import Database.HDBC.ODBC
 
 shouldCalculateRemainingFlightDistance :: Test
 shouldCalculateRemainingFlightDistance =
@@ -14,7 +15,7 @@ shouldCalculateRemainingFlightDistance =
         let fromDestination = Coordinates {x = 0.0, y = 0.0}
         let toDestination = Coordinates {x = 4.0, y = 5.0}
         let current = Coordinates {x = 1.0, y = 1.0}
-        let flight = Flight {plane = plane, from = fromDestination, to = toDestination, currentPosition = current}
+        let flight = Flight {plane = plane, Flight.from = fromDestination, Flight.to = toDestination, currentPosition = current}
 
         let actualRemainingDistance = getRemainingDistance flight
         let expectedDistance = 5.0
@@ -29,7 +30,7 @@ flightShouldReachItsDestinationByTicking =
         let plane = Plane {kind = Airbus, distancePerTick = 1}
         let fromDestination = Coordinates {x = 0.0, y = 0.0}
         let toDestination = Coordinates {x = 4.0, y = 5.0}
-        let flight = Flight {plane = plane, from = fromDestination, to = toDestination, currentPosition = fromDestination}
+        let flight = Flight {plane = plane, Flight.from = fromDestination, Flight.to = toDestination, currentPosition = fromDestination}
 
         let updatedFlight1 = tick flight
         let updatedFlight2 = tick updatedFlight1
@@ -39,7 +40,7 @@ flightShouldReachItsDestinationByTicking =
         let updatedFlight6 = tick updatedFlight5
         let updatedFlight7 = tick updatedFlight6
 
-        let expectedFlight = Flight {plane = plane, from = fromDestination, to = toDestination, currentPosition = toDestination}
+        let expectedFlight = Flight {plane = plane, Flight.from = fromDestination, Flight.to = toDestination, currentPosition = toDestination}
         assertEqual "Flight should be ended" expectedFlight updatedFlight7
     )
 
@@ -47,8 +48,9 @@ sqlTest :: Test
 sqlTest =
   TestCase
     ( do
-        a <- getAllFlights ()
-        print ("result: " ++ show a)
+        connection <- connectODBC "DRIVER={ODBC Driver 17 for SQL Server};Server=localhost, 1499;Database=SimulatorService;Uid=sa;Pwd=Secret!Passw0rd;Connection Timeout=30"
+        flights <- getAllFlights connection
+        print ("result: " ++ show flights)
     )
 
 tests :: Test

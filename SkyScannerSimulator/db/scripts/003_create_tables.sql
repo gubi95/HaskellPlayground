@@ -3,11 +3,12 @@ USE [SimulatorService]
 CREATE TABLE [SimulatorService].[Plane] (
     [Id] INT NOT NULL IDENTITY PRIMARY KEY,
     [Model] NVARCHAR(100) NOT NULL,
-    [Airlines] NVARCHAR(100) NULL
+    [Airlines] NVARCHAR(100) NULL,
+    [DistancePerTick] INT NOT NULL
 )
 
-INSERT INTO [SimulatorService].[Plane] ([Model], [Airlines]) VALUES 
-('Boeing 777', 'WizzAir'), ('Airbus A320', 'WizzAir'), ('Airbus A380', 'Ryanair')
+INSERT INTO [SimulatorService].[Plane] ([Model], [Airlines], [DistancePerTick]) VALUES 
+('Boeing 777', 'WizzAir', 10), ('Airbus A320', 'WizzAir', 12), ('Airbus A380', 'Ryanair', 14)
 
 CREATE TABLE [SimulatorService].[Flights] (
     [From] NVARCHAR(100) NOT NULL,

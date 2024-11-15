@@ -11,7 +11,7 @@ shouldCalculateRemainingFlightDistance :: Test
 shouldCalculateRemainingFlightDistance =
   TestCase
     ( do
-        let plane = Plane {kind = Airbus, distancePerTick = 0}
+        let plane = Plane {kind = AirbusA380, distancePerTick = 0}
         let fromDestination = Coordinates {x = 0.0, y = 0.0}
         let toDestination = Coordinates {x = 4.0, y = 5.0}
         let current = Coordinates {x = 1.0, y = 1.0}
@@ -27,7 +27,7 @@ flightShouldReachItsDestinationByTicking :: Test
 flightShouldReachItsDestinationByTicking =
   TestCase
     ( do
-        let plane = Plane {kind = Airbus, distancePerTick = 1}
+        let plane = Plane {kind = AirbusA380, distancePerTick = 1}
         let fromDestination = Coordinates {x = 0.0, y = 0.0}
         let toDestination = Coordinates {x = 4.0, y = 5.0}
         let flight = Flight {plane = plane, Flight.from = fromDestination, Flight.to = toDestination, currentPosition = fromDestination}

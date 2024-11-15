@@ -27,6 +27,8 @@ dependencies:
 - HDBC == 2.4.0.4
 - HDBC-odbc == 2.6.0.0
 - containers == 0.6.7
+- extra == 1.7.16
+- mtl == 2.3.1
 
 ghc-options:
 - -Wall

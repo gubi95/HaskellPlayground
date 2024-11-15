@@ -32,6 +32,7 @@ library
       Flight
       Plane
       FlightAdapter
+      SqlAdapter
   other-modules:
       Paths_SkyScannerSimulator
   autogen-modules:
@@ -49,6 +50,8 @@ library
     , aeson >=2.1.2.1
     , base >=4.7 && <5
     , containers ==0.6.7
+    , extra ==1.7.16
+    , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010
 
@@ -69,6 +72,8 @@ executable SkyScannerSimulator-exe
     , aeson >=2.1.2.1
     , base >=4.7 && <5
     , containers ==0.6.7
+    , extra ==1.7.16
+    , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010
 
@@ -91,5 +96,7 @@ test-suite SkyScannerSimulator-test
     , aeson >=2.1.2.1
     , base >=4.7 && <5
     , containers ==0.6.7
+    , extra ==1.7.16
+    , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010

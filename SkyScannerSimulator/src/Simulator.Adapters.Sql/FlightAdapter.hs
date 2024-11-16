@@ -3,55 +3,99 @@
 {-# HLINT ignore "Use mapMaybe" #-}
 module FlightAdapter (getAllFlights, FlightDto (..)) where
 
+import Control.Arrow (left)
 import Control.Exception (catch)
 import Control.Monad.Except
-import Data.Either.Extra
-import qualified Data.Map as Map
+import Coordinates (fromString)
 import Database.HDBC
 import Database.HDBC.ODBC
-import SqlAdapter (SqlAdapterError(..))
+import Flight (Flight (..))
+import Plane (Plane (..), planeKindFromString)
+import SqlAdapter (SqlAdapterError (..), getColumnValue)
 
-
-data FlightDto = FlightDto {from :: String, to :: String, planeModel :: String}
+data FlightDto = FlightDto
+  { planeModel :: String,
+    departureLat :: String,
+    departureLon :: String,
+    arrivalLat :: String,
+    arrivalLon :: String
+  }
   deriving (Show)
 
-getAllFlights :: Connection -> IO (Either SqlAdapterError [FlightDto])
+getAllFlights :: Connection -> IO (Either SqlAdapterError [Flight])
 getAllFlights connection = runExceptT $ do
   sqlValues <-
-        ExceptT $
-        catch
-          ( do
-              let query =
-                    "\
-                    \SELECT f.[From], f.[To], p.[Model] AS [PlaneModel] \
-                    \FROM [SimulatorService].[Flights] f \
-                    \INNER JOIN [SimulatorService].[Plane] p \
-                    \ON f.[PlaneId] = p.[Id]"
+    ExceptT $
+      catch
+        ( do
+            let query =
+                  "\
+                  \SELECT \
+                  \p.[Model] AS [PlaneModel],\
+                  \departureAirport.[Lat] AS [DepartureLat],\
+                  \departureAirport.[Lon] AS [DepartureLon],\
+                  \arrivalAirport.[Lat] AS [ArrivalLat],\
+                  \arrivalAirport.[Lon] AS [ArrivalLon] \
+                  \FROM [SimulatorService].[Flights] f \
+                  \INNER JOIN [SimulatorService].[Plane] p \
+                  \ON f.[PlaneId] = p.[Id]\
+                  \INNER JOIN [SimulatorService].[Airport] departureAirport \
+                  \ON f.[DepartureAirportId] = departureAirport.[Id] \
+                  \INNER JOIN [SimulatorService].[Airport] arrivalAirport \
+                  \ON f.[ArrivalAirportId] = arrivalAirport.[Id]\
+                  \"
 
-              stmt <- prepare connection query
+            stmt <- prepare connection query
 
-              _ <- execute stmt []
+            _ <- execute stmt []
 
-              Right <$> fetchAllRowsMap stmt
-          )
-          ( pure . Left . GeneralError
-          )
+            Right <$> fetchAllRowsMap stmt
+        )
+        ( pure . Left . GeneralError
+        )
 
-  let dtos =
+  dtos <-
+    ExceptT $
+      pure $
         traverse
           ( \x -> do
-              fromSqlValie <- maybeToEither (MissingColumnsInQueryResult "Missing From column") (Map.lookup "From" x)
-              toSqlValue <- maybeToEither (MissingColumnsInQueryResult "Missing To column") (Map.lookup "To" x)
-              planeModelSqlValue <- maybeToEither (MissingColumnsInQueryResult "Missing PlaneModel column") (Map.lookup "PlaneModel" x)
+              planeModelSqlValue <- getColumnValue "PlaneModel" x
+              departureLatSqlValue <- getColumnValue "DepartureLat" x
+              departureLonSqlValue <- getColumnValue "DepartureLon" x
+              arrivalLatSqlValue <- getColumnValue "ArrivalLat" x
+              arrivalLonSqlValue <- getColumnValue "ArrivalLon" x
 
-              let dto =
-                    FlightDto
-                      { from = fromSql fromSqlValie,
-                        to = fromSql toSqlValue,
-                        planeModel = fromSql planeModelSqlValue
-                      }
-              return dto
+              pure
+                FlightDto
+                  { planeModel = fromSql planeModelSqlValue,
+                    departureLat = fromSql departureLatSqlValue,
+                    departureLon = fromSql departureLonSqlValue,
+                    arrivalLat = fromSql arrivalLatSqlValue,
+                    arrivalLon = fromSql arrivalLonSqlValue
+                  }
           )
           sqlValues
 
-  ExceptT (pure dtos)
+  ExceptT . pure $
+    traverse
+      ( \dto -> do
+          planeKind <- left InvalidData $ planeKindFromString $ planeModel dto
+          fLat <- left InvalidData $ fromString $ departureLat dto
+          fLon <- left InvalidData $ fromString $ departureLon dto
+          tLat <- left InvalidData $ fromString $ arrivalLat dto
+          tLon <- left InvalidData $ fromString $ arrivalLon dto
+
+          pure
+            Flight
+              { plane =
+                  Plane
+                    { kind = planeKind,
+                      distancePerTick = 0.0
+                    },
+                fromLat = fLat,
+                fromLon = fLon,
+                toLat = tLat,
+                toLon = tLon
+              }
+      )
+      dtos

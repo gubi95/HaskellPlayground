@@ -15,7 +15,8 @@ data FlightDto = FlightDto
     departureLat :: Double,
     departureLon :: Double,
     arrivalLat :: Double,
-    arrivalLon :: Double
+    arrivalLon :: Double,
+    kilometersPerTick :: Double
   }
   deriving (Show)
 
@@ -29,6 +30,7 @@ getAllFlights connection = runExceptT $ do
                   "\
                   \SELECT \
                   \p.[Model] AS [PlaneModel],\
+                  \p.[KilometersPerTick],\
                   \departureAirport.[Lat] AS [DepartureLat],\
                   \departureAirport.[Lon] AS [DepartureLon],\
                   \arrivalAirport.[Lat] AS [ArrivalLat],\
@@ -61,6 +63,7 @@ getAllFlights connection = runExceptT $ do
               departureLonSqlValue <- getColumnValue "DepartureLon" x
               arrivalLatSqlValue <- getColumnValue "ArrivalLat" x
               arrivalLonSqlValue <- getColumnValue "ArrivalLon" x
+              kilometersPerTickSqlValue <- getColumnValue "KilometersPerTick" x
 
               pure
                 FlightDto
@@ -68,7 +71,8 @@ getAllFlights connection = runExceptT $ do
                     departureLat = fromSql departureLatSqlValue,
                     departureLon = fromSql departureLonSqlValue,
                     arrivalLat = fromSql arrivalLatSqlValue,
-                    arrivalLon = fromSql arrivalLonSqlValue
+                    arrivalLon = fromSql arrivalLonSqlValue,
+                    FlightAdapter.kilometersPerTick = fromSql kilometersPerTickSqlValue
                   }
           )
           sqlValues
@@ -83,7 +87,7 @@ getAllFlights connection = runExceptT $ do
               { plane =
                   Plane
                     { kind = planeKind,
-                      distancePerTick = 0.0
+                      Plane.kilometersPerTick = FlightAdapter.kilometersPerTick dto
                     },
                 from = Coordinates {lat = departureLat dto, lon = departureLon dto},
                 to = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},

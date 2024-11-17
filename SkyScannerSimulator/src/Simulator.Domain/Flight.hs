@@ -23,12 +23,13 @@ endFlight flight =
 
 tick :: Flight -> Flight
 tick flight = do
-  let distPerTick = distancePerTick . plane $ flight
-  let tickProgress = Math.min 1.0 (progress flight + distPerTick)
-  let intermediatePoint = calculateIntermediatePoint (from flight) (to flight) tickProgress
+  let kilPerTick = kilometersPerTick . plane $ flight
+  let fractionPerTick = kilPerTick / calculateDistance (from flight) (to flight)
+  let tickFractionProgress = Math.min 1.0 (progress flight + fractionPerTick)
+  let intermediatePoint = calculateIntermediatePoint (from flight) (to flight) tickFractionProgress
 
-  let updatedFlight = flight {currentPosition = intermediatePoint, progress = tickProgress}
+  let updatedFlight = flight {currentPosition = intermediatePoint, progress = tickFractionProgress}
 
-  case tickProgress of
+  case tickFractionProgress of
     1.0 -> endFlight updatedFlight
     _ -> updatedFlight

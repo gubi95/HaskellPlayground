@@ -72,7 +72,7 @@ flightShouldReachItsDestinationByTickingTest =
                 progress = 0.0
               }
 
-      let updatedFlight = iterate tick flight !! 7
+      let actualFlight = iterate tick flight !! 7
 
       let expectedFlight =
             Flight
@@ -83,7 +83,7 @@ flightShouldReachItsDestinationByTickingTest =
                 progress = 1.0
               }
 
-      assertEqual "Flight should be ended" expectedFlight updatedFlight
+      assertEqual "Flight should be ended" expectedFlight actualFlight
 
 tests :: Test
 tests =

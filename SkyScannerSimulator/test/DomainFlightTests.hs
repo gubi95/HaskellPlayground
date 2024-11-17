@@ -1,14 +1,12 @@
-module FlightTests (tests) where
+module DomainFlightTests (tests) where
 
 import Coordinates (Coordinates (..))
-import Database.HDBC.ODBC
 import Flight (Flight (..), getRemainingDistance, tick)
-import FlightAdapter
 import Plane
 import Test.HUnit
 
-shouldCalculateRemainingFlightDistance :: Test
-shouldCalculateRemainingFlightDistance =
+shouldCalculateRemainingFlightDistanceTest :: Test
+shouldCalculateRemainingFlightDistanceTest =
   TestCase
     ( do
         let flight =
@@ -24,8 +22,8 @@ shouldCalculateRemainingFlightDistance =
         assertEqual "Should calculare remaining distance correctly" 5918.185064088764 actualRemainingDistance
     )
 
-flightShouldReachItsDestinationByTicking :: Test
-flightShouldReachItsDestinationByTicking =
+flightShouldReachItsDestinationByTickingTest :: Test
+flightShouldReachItsDestinationByTickingTest =
   TestCase
     ( do
         let plane = Plane {kind = AirbusA380, distancePerTick = 1}
@@ -45,19 +43,9 @@ flightShouldReachItsDestinationByTicking =
         assertEqual "Flight should be ended" expectedFlight updatedFlight7
     )
 
-sqlTest :: Test
-sqlTest =
-  TestCase
-    ( do
-        connection <- connectODBC "DRIVER={ODBC Driver 17 for SQL Server};Server=localhost, 1499;Database=SimulatorService;Uid=sa;Pwd=Secret!Passw0rd;Connection Timeout=30"
-        flights <- getAllFlights connection
-        print ("result: " ++ show flights)
-    )
-
 tests :: Test
 tests =
   TestList
-    [ TestLabel "Should calculate remaining flight distance" shouldCalculateRemainingFlightDistance,
-      TestLabel "Flight should reach its destination" flightShouldReachItsDestinationByTicking,
-      TestLabel "sql test" sqlTest
+    [ TestLabel "Should calculate remaining flight distance" shouldCalculateRemainingFlightDistanceTest,
+      TestLabel "Flight should reach its destination" flightShouldReachItsDestinationByTickingTest
     ]

@@ -81,7 +81,8 @@ test-suite SkyScannerSimulator-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      FlightTests
+      DomainFlightTests
+      SqlFlightAdapterTests
       Paths_SkyScannerSimulator
   autogen-modules:
       Paths_SkyScannerSimulator

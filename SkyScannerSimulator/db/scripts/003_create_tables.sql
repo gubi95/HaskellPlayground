@@ -13,12 +13,12 @@ INSERT INTO [SimulatorService].[Plane] ([Model], [Airlines], [DistancePerTick]) 
 CREATE TABLE [SimulatorService].[Airport] (
     [Id] INT NOT NULL IDENTITY PRIMARY KEY,
     [Code] NVARCHAR(10) NOT NULL,
-    [Lat] NVARCHAR(30) NOT NULL,
-    [Lon] NVARCHAR(30) NOT NULL
+    [Lat] FLOAT(24) NOT NULL,
+    [Lon] FLOAT(24) NOT NULL
 )
 
 INSERT INTO [SimulatorService].[Airport] ([Code], [Lat], [Lon])
-VALUES ('JFK', '40_38_23', '73_46_44'), ('LAX', '33_56_33', '118_24_29')
+VALUES ('JFK', 40.646149, -73.785964), ('LAX', 33.940325, -118.412331)
 
 CREATE TABLE [SimulatorService].[Flights] (
     [PlaneId] INT NOT NULL,

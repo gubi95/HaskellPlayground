@@ -1,68 +1,77 @@
-module Flight (Flight (..)) where
+module Flight (Flight (..), getRemainingDistance, tick) where
 
 import Coordinates
--- import GHC.Float (powerDouble, sqrtDouble)
+import qualified GHC.Float as Math
 import Plane
 
 data Flight = Flight
   { plane :: Plane,
-    fromLat :: Coordinates,
-    fromLon :: Coordinates,
-    toLat :: Coordinates,
-    toLon :: Coordinates
+    from :: Coordinates,
+    to :: Coordinates,
+    currentPosition :: Coordinates
   }
   deriving (Eq, Show)
 
--- getRemainingDistance :: Flight -> Double
--- getRemainingDistance flight = do
---   let current = currentPosition flight
---   let destination = to flight
+degreesToRadians :: Double -> Double
+degreesToRadians degrees =
+  degrees * pi / 180.0
 
---   let x1 = x current
---   let x2 = x destination
+getRemainingDistance :: Flight -> Double
+getRemainingDistance flight = do
+  let earthRadiusKm = 6371.0
 
---   let y1 = y current
---   let y2 = y destination
+  let lat2 = lat . to $ flight
+  let lat1 = lat . from $ flight
+  let lon2 = lon . to $ flight
+  let lon1 = lon . from $ flight
 
---   sqrtDouble (powerDouble (x1 - x2) 2.0 + powerDouble (y1 - y2) 2.0)
+  let dLat = degreesToRadians (lat2 - lat1)
+  let dLon = degreesToRadians (lon2 - lon1)
 
--- tickUntilNewDistanceIsReached :: Double -> (Double -> Double) -> Flight -> Flight
--- tickUntilNewDistanceIsReached desiredDistance calculateNewY flight = do
---   let desitnationX = x . to $ flight
---   let currentX = x . currentPosition $ flight
---   let factor = if desitnationX > currentX then 0.0001 else -0.0001
---   let newCurrentX = currentX + factor
---   let newCurrentY = calculateNewY currentX
+  let dLat1 = degreesToRadians lat1
+  let dLat2 = degreesToRadians lat2
 
---   let updatedFlight = flight {currentPosition = Coordinates {x = newCurrentX, y = newCurrentY}}
+  let a = Math.sin (dLat / 2) * Math.sin (dLat / 2) + Math.sin (dLon / 2) * Math.sin (dLon / 2) * Math.cos dLat1 * Math.cos dLat2
+  let c = 2 * Math.atan2 (Math.sqrt a) (Math.sqrt (1 - a))
+  earthRadiusKm * c
 
---   let currentRemainingDistance = getRemainingDistance updatedFlight
+tickUntilNewDistanceIsReached :: Double -> (Double -> Double) -> Flight -> Flight
+tickUntilNewDistanceIsReached desiredDistance calculateNewY flight = do
+  let desitnationX = lat . to $ flight
+  let currentX = lon . currentPosition $ flight
+  let factor = if desitnationX > currentX then 0.0001 else -0.0001
+  let newCurrentX = currentX + factor
+  let newCurrentY = calculateNewY currentX
 
---   let distancePassed = currentRemainingDistance <= desiredDistance
+  let updatedFlight = flight {currentPosition = Coordinates {lat = newCurrentX, lon = newCurrentY}}
 
---   if distancePassed then updatedFlight else tickUntilNewDistanceIsReached desiredDistance calculateNewY updatedFlight
+  let currentRemainingDistance = getRemainingDistance updatedFlight
 
--- endFlight :: Flight -> Flight
--- endFlight flight =
---   flight {currentPosition = to flight}
+  let distancePassed = currentRemainingDistance <= desiredDistance
 
--- tick :: Flight -> Flight
--- tick flight = do
---   let source = from flight
---   let destination = to flight
+  if distancePassed then updatedFlight else tickUntilNewDistanceIsReached desiredDistance calculateNewY updatedFlight
 
---   let x1 = x source
---   let x2 = x destination
+endFlight :: Flight -> Flight
+endFlight flight =
+  flight {currentPosition = to flight}
 
---   let y1 = y source
---   let y2 = y destination
+tick :: Flight -> Flight
+tick flight = do
+  let source = from flight
+  let destination = to flight
 
---   let a = (y2 - y1) / (x2 - x1)
---   let b = y1 - a * x1
---   let calculateNewY newX = a * newX + b
+  let x1 = lat source
+  let x2 = lat destination
 
---   let remainingDistance = getRemainingDistance flight
---   let distPerTick = distancePerTick . plane $ flight
---   let distanceToPass = remainingDistance - distPerTick
+  let y1 = lon source
+  let y2 = lon destination
 
---   if distanceToPass <= 0.0 then endFlight flight else tickUntilNewDistanceIsReached distanceToPass calculateNewY flight
+  let a = (y2 - y1) / (x2 - x1)
+  let b = y1 - a * x1
+  let calculateNewY newX = a * newX + b
+
+  let remainingDistance = getRemainingDistance flight
+  let distPerTick = distancePerTick . plane $ flight
+  let distanceToPass = remainingDistance - distPerTick
+
+  if distanceToPass <= 0.0 then endFlight flight else tickUntilNewDistanceIsReached distanceToPass calculateNewY flight

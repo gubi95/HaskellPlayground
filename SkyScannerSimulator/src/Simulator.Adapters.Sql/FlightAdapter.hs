@@ -1,12 +1,9 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
-{-# HLINT ignore "Use mapMaybe" #-}
 module FlightAdapter (getAllFlights, FlightDto (..)) where
 
 import Control.Arrow (left)
 import Control.Exception (catch)
 import Control.Monad.Except
-import Coordinates (fromString)
+import Coordinates
 import Database.HDBC
 import Database.HDBC.ODBC
 import Flight (Flight (..))
@@ -15,10 +12,10 @@ import SqlAdapter (SqlAdapterError (..), getColumnValue)
 
 data FlightDto = FlightDto
   { planeModel :: String,
-    departureLat :: String,
-    departureLon :: String,
-    arrivalLat :: String,
-    arrivalLon :: String
+    departureLat :: Double,
+    departureLon :: Double,
+    arrivalLat :: Double,
+    arrivalLon :: Double
   }
   deriving (Show)
 
@@ -80,10 +77,6 @@ getAllFlights connection = runExceptT $ do
     traverse
       ( \dto -> do
           planeKind <- left InvalidData $ planeKindFromString $ planeModel dto
-          fLat <- left InvalidData $ fromString $ departureLat dto
-          fLon <- left InvalidData $ fromString $ departureLon dto
-          tLat <- left InvalidData $ fromString $ arrivalLat dto
-          tLon <- left InvalidData $ fromString $ arrivalLon dto
 
           pure
             Flight
@@ -92,10 +85,9 @@ getAllFlights connection = runExceptT $ do
                     { kind = planeKind,
                       distancePerTick = 0.0
                     },
-                fromLat = fLat,
-                fromLon = fLon,
-                toLat = tLat,
-                toLon = tLon
+                from = Coordinates {lat = departureLat dto, lon = departureLon dto},
+                to = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},
+                currentPosition = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto}
               }
       )
       dtos

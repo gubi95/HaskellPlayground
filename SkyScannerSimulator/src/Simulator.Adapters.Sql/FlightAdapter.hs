@@ -1,6 +1,6 @@
-module FlightAdapter (getAllFlights, FlightDto (..)) where
+module FlightAdapter (getAllFlights) where
 
-import Control.Arrow (left)
+import Control.Arrow (ArrowChoice (right), left)
 import Control.Exception (catch)
 import Control.Monad.Except
 import Coordinates
@@ -9,16 +9,6 @@ import Database.HDBC.ODBC
 import Flight (Flight (..))
 import Plane (Plane (..), planeKindFromString)
 import SqlAdapter (SqlAdapterError (..), getColumnValue)
-
-data FlightDto = FlightDto
-  { planeModel :: String,
-    departureLat :: Double,
-    departureLon :: Double,
-    arrivalLat :: Double,
-    arrivalLon :: Double,
-    kilometersPerTick :: Double
-  }
-  deriving (Show)
 
 getAllFlights :: Connection -> IO (Either SqlAdapterError [Flight])
 getAllFlights connection = runExceptT $ do
@@ -53,46 +43,29 @@ getAllFlights connection = runExceptT $ do
         ( pure . Left . GeneralError
         )
 
-  dtos <-
-    ExceptT $
-      pure $
-        traverse
-          ( \x -> do
-              planeModelSqlValue <- getColumnValue "PlaneModel" x
-              departureLatSqlValue <- getColumnValue "DepartureLat" x
-              departureLonSqlValue <- getColumnValue "DepartureLon" x
-              arrivalLatSqlValue <- getColumnValue "ArrivalLat" x
-              arrivalLonSqlValue <- getColumnValue "ArrivalLon" x
-              kilometersPerTickSqlValue <- getColumnValue "KilometersPerTick" x
+  ExceptT $
+    pure $
+      traverse
+        ( \x -> do
+            let parsePlaneModel = left InvalidData . planeKindFromString . fromSql
+            planeKind <- getColumnValue "PlaneModel" x >>= parsePlaneModel
+            departureLat <- right fromSql $ getColumnValue "DepartureLat" x
+            departureLon <- right fromSql $ getColumnValue "DepartureLon" x
+            arrivalLat <- right fromSql $ getColumnValue "ArrivalLat" x
+            arrivalLon <- right fromSql $ getColumnValue "ArrivalLon" x
+            kilometersPerTick <- right fromSql $ getColumnValue "KilometersPerTick" x
 
-              pure
-                FlightDto
-                  { planeModel = fromSql planeModelSqlValue,
-                    departureLat = fromSql departureLatSqlValue,
-                    departureLon = fromSql departureLonSqlValue,
-                    arrivalLat = fromSql arrivalLatSqlValue,
-                    arrivalLon = fromSql arrivalLonSqlValue,
-                    FlightAdapter.kilometersPerTick = fromSql kilometersPerTickSqlValue
-                  }
-          )
-          sqlValues
-
-  ExceptT . pure $
-    traverse
-      ( \dto -> do
-          planeKind <- left InvalidData $ planeKindFromString $ planeModel dto
-
-          pure
-            Flight
-              { plane =
-                  Plane
-                    { kind = planeKind,
-                      Plane.kilometersPerTick = FlightAdapter.kilometersPerTick dto
-                    },
-                from = Coordinates {lat = departureLat dto, lon = departureLon dto},
-                to = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},
-                currentPosition = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},
-                progress = 0.0
-              }
-      )
-      dtos
+            pure
+              Flight
+                { plane =
+                    Plane
+                      { kind = planeKind,
+                        Plane.kilometersPerTick = kilometersPerTick
+                      },
+                  from = Coordinates {lat = departureLat, lon = departureLon},
+                  to = Coordinates {lat = arrivalLat, lon = arrivalLon},
+                  currentPosition = Coordinates {lat = arrivalLat, lon = arrivalLon},
+                  progress = 0.0
+                }
+        )
+        sqlValues

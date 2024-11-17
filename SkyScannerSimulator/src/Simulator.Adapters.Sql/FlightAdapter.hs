@@ -87,7 +87,8 @@ getAllFlights connection = runExceptT $ do
                     },
                 from = Coordinates {lat = departureLat dto, lon = departureLon dto},
                 to = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},
-                currentPosition = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto}
+                currentPosition = Coordinates {lat = arrivalLat dto, lon = arrivalLon dto},
+                progress = 0.0
               }
       )
       dtos

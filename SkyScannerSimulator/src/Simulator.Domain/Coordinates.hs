@@ -29,11 +29,12 @@ calculateDistance f t = do
   earthRadiusKm * c
 
 calculateIntermediatePoint :: Coordinates -> Coordinates -> Double -> Coordinates
+calculateIntermediatePoint f _ 0.0 = f
 calculateIntermediatePoint f t dist = do
   let constant = (pi :: Double) / 180.0
   let angular = dist / earthRadiusKm
-  let a = Math.sin (0 * angular) / Math.sin angular
-  let b = Math.sin (1 * angular) / Math.sin angular
+  let a = Math.sin ((1 - dist) * angular) / Math.sin angular
+  let b = Math.sin (dist * angular) / Math.sin angular
 
   let lat1 = degreesToRadians $ lat f
   let lat2 = degreesToRadians $ lat t

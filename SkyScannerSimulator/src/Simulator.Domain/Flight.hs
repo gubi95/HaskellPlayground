@@ -1,13 +1,15 @@
 module Flight (Flight (..), getRemainingDistance, tick, calculateIntermediatePoint) where
 
 import Coordinates
+import qualified GHC.Base as Math
 import Plane
 
 data Flight = Flight
   { plane :: Plane,
     from :: Coordinates,
     to :: Coordinates,
-    currentPosition :: Coordinates
+    currentPosition :: Coordinates,
+    progress :: Double
   }
   deriving (Eq, Show)
 
@@ -22,18 +24,11 @@ endFlight flight =
 tick :: Flight -> Flight
 tick flight = do
   let distPerTick = distancePerTick . plane $ flight
-  let actualRemainingDistance = getRemainingDistance flight
-  let intermediatePoint = calculateIntermediatePoint (from flight) (to flight) distPerTick
+  let tickProgress = Math.min 1.0 (progress flight + distPerTick)
+  let intermediatePoint = calculateIntermediatePoint (from flight) (to flight) tickProgress
 
-  let updatedFlight = flight {currentPosition = intermediatePoint}
+  let updatedFlight = flight {currentPosition = intermediatePoint, progress = tickProgress}
 
-  let newDistanceRemaining = getRemainingDistance updatedFlight
-
-  if newDistanceRemaining < distPerTick
-    then
-      updatedFlight
-    else
-      if actualRemainingDistance - newDistanceRemaining > distPerTick
-        then
-          tick updatedFlight
-        else endFlight updatedFlight
+  case tickProgress of
+    1.0 -> endFlight updatedFlight
+    _ -> updatedFlight

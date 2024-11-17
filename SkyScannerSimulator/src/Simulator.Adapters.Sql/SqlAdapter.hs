@@ -8,7 +8,7 @@ data SqlAdapterError
   = GeneralError SqlError
   | MissingColumnsInQueryResult String
   | InvalidData String
-  deriving (Show)
+  deriving (Show, Eq)
 
 getColumnValue :: String -> Map String SqlValue -> Either SqlAdapterError SqlValue
 getColumnValue columnName x =

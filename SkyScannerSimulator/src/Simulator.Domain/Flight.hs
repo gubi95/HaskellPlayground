@@ -5,7 +5,8 @@ import qualified GHC.Base as Math
 import Plane
 
 data Flight = Flight
-  { plane :: Plane,
+  { id :: Int,
+    plane :: Plane,
     from :: Coordinates,
     to :: Coordinates,
     currentPosition :: Coordinates,

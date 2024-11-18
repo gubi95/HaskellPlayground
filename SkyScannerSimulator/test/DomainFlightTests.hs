@@ -11,7 +11,8 @@ shouldCalculateRemainingFlightDistanceTest =
     do
       let flight =
             Flight
-              { plane = Plane {kind = AirbusA380, kilometersPerTick = 10.0},
+              { Flight.id = 1,
+                plane = Plane {kind = AirbusA380, kilometersPerTick = 10.0},
                 from = Coordinates {lat = 51.5, lon = 0.0},
                 to = Coordinates {lat = 38.8, lon = -77.1},
                 currentPosition = Coordinates {lat = 51.5, lon = 0.0},
@@ -65,7 +66,8 @@ flightShouldReachItsDestinationByTickingTest =
       let toDestination = Coordinates {lat = 47.80543, lon = 27.02177}
       let flight =
             Flight
-              { plane = p,
+              { Flight.id = 1,
+                plane = p,
                 from = fromDestination,
                 to = toDestination,
                 currentPosition = fromDestination,
@@ -76,7 +78,8 @@ flightShouldReachItsDestinationByTickingTest =
 
       let expectedFlight =
             Flight
-              { plane = p,
+              { Flight.id = 1,
+                plane = p,
                 from = fromDestination,
                 to = toDestination,
                 currentPosition = toDestination,

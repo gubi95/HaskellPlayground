@@ -19,6 +19,7 @@ getAllFlights connection = runExceptT $ do
             let query =
                   "\
                   \SELECT \
+                  \f.[Id],\
                   \p.[Model] AS [PlaneModel],\
                   \p.[KilometersPerTick],\
                   \departureAirport.[Lat] AS [DepartureLat],\
@@ -48,19 +49,21 @@ getAllFlights connection = runExceptT $ do
       traverse
         ( \x -> do
             let parsePlaneModel = left InvalidData . planeKindFromString . fromSql
+            flightId <- right fromSql $ getColumnValue "Id" x
             planeKind <- getColumnValue "PlaneModel" x >>= parsePlaneModel
             departureLat <- right fromSql $ getColumnValue "DepartureLat" x
             departureLon <- right fromSql $ getColumnValue "DepartureLon" x
             arrivalLat <- right fromSql $ getColumnValue "ArrivalLat" x
             arrivalLon <- right fromSql $ getColumnValue "ArrivalLon" x
-            kilometersPerTick <- right fromSql $ getColumnValue "KilometersPerTick" x
+            kmPerTick <- right fromSql $ getColumnValue "KilometersPerTick" x
 
             pure
               Flight
-                { plane =
+                { Flight.id = flightId,
+                  plane =
                     Plane
                       { kind = planeKind,
-                        Plane.kilometersPerTick = kilometersPerTick
+                        kilometersPerTick = kmPerTick
                       },
                   from = Coordinates {lat = departureLat, lon = departureLon},
                   to = Coordinates {lat = arrivalLat, lon = arrivalLon},

@@ -21,6 +21,7 @@ INSERT INTO [SimulatorService].[Airport] ([Code], [Lat], [Lon])
 VALUES ('JFK', 40.646149, -73.785964), ('LAX', 33.940325, -118.412331)
 
 CREATE TABLE [SimulatorService].[Flights] (
+    [Id] INT NOT NULL IDENTITY PRIMARY KEY,
     [PlaneId] INT NOT NULL,
     [DepartureAirportId] INT NOT NULL,
     [ArrivalAirportId] INT NOT NULL,

@@ -42,6 +42,9 @@ library
       src/Simulator.Api
       src/Simulator.Domain
       src/Simulator.Adapters.Sql
+  default-extensions:
+      OverloadedRecordDot
+      DuplicateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       HDBC ==2.4.0.4

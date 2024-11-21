@@ -47,6 +47,9 @@ library:
   - src/Simulator.Api
   - src/Simulator.Domain
   - src/Simulator.Adapters.Sql
+  default-extensions:
+  - OverloadedRecordDot
+  - DuplicateRecordFields
 
 executables:
   SkyScannerSimulator-exe:

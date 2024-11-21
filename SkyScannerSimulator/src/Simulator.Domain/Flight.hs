@@ -20,14 +20,13 @@ getRemainingDistance flight = do
 
 endFlight :: Flight -> Flight
 endFlight flight =
-  flight {currentPosition = to flight}
+  flight {currentPosition = flight.to}
 
 tick :: Flight -> Flight
 tick flight = do
-  let kilPerTick = kilometersPerTick . plane $ flight
-  let fractionPerTick = kilPerTick / calculateDistance (from flight) (to flight)
-  let tickFractionProgress = Math.min 1.0 (progress flight + fractionPerTick)
-  let intermediatePoint = calculateIntermediatePoint (from flight) (to flight) tickFractionProgress
+  let fractionPerTick = flight.plane.kilometersPerTick / calculateDistance flight.from flight.to
+  let tickFractionProgress = Math.min 1.0 (flight.progress + fractionPerTick)
+  let intermediatePoint = calculateIntermediatePoint flight.from flight.to tickFractionProgress
 
   let updatedFlight = flight {currentPosition = intermediatePoint, progress = tickFractionProgress}
 

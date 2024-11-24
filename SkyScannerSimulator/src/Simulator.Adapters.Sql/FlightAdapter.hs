@@ -8,9 +8,10 @@ import Database.HDBC
 import Database.HDBC.ODBC
 import Flight (Flight (..))
 import Plane (Plane (..), planeKindFromString)
+import Ports (GetAllFlights)
 import SqlAdapter (SqlAdapterError (..), getColumnValue)
 
-getAllFlights :: Connection -> IO (Either SqlAdapterError [Flight])
+getAllFlights :: Connection -> GetAllFlights SqlAdapterError
 getAllFlights connection = runExceptT $ do
   sqlValues <-
     ExceptT $

@@ -29,6 +29,7 @@ dependencies:
 - containers == 0.6.7
 - extra == 1.7.16
 - mtl == 2.3.1
+- http-types == 0.12.4
 
 ghc-options:
 - -Wall

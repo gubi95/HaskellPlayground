@@ -26,11 +26,13 @@ source-repository head
 library
   exposed-modules:
       Lib
-      GetSchedule
+      CompositionRoot
+      GetFlights
       Rooting
       Coordinates
       Flight
       Plane
+      Ports
       FlightAdapter
       SqlAdapter
   other-modules:
@@ -54,6 +56,7 @@ library
     , base >=4.7 && <5
     , containers ==0.6.7
     , extra ==1.7.16
+    , http-types ==0.12.4
     , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010
@@ -76,6 +79,7 @@ executable SkyScannerSimulator-exe
     , base >=4.7 && <5
     , containers ==0.6.7
     , extra ==1.7.16
+    , http-types ==0.12.4
     , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010
@@ -101,6 +105,7 @@ test-suite SkyScannerSimulator-test
     , base >=4.7 && <5
     , containers ==0.6.7
     , extra ==1.7.16
+    , http-types ==0.12.4
     , mtl ==2.3.1
     , scotty ==0.20.1
   default-language: Haskell2010

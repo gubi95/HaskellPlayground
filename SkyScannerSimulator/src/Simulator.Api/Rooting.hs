@@ -3,9 +3,10 @@
 module Rooting (rooting) where
 
 import Web.Scotty (get, scotty)
-import GetSchedule
+import GetFlights
+import CompositionRoot (buildGetAllFlights)
 
 rooting :: IO ()
 rooting =
   scotty 3000 $
-    get "/schedule" GetSchedule.execute
+    get "/flights" $ GetFlights.execute buildGetAllFlights

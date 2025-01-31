@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { ComposableMap, Geographies, Geography, Line, Marker } from 'react-simple-maps';
+import axios from 'axios';
 
 function App() {
   const calculatePlaneRotation = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -27,6 +28,30 @@ function App() {
 
   const lat2 = 52.237049;
   const lon2 = 21.017532;
+
+  const [flights, setFlights] = useState<Flight[]>([]);
+
+  type Flight = {
+    fromLat: number,
+    fromLon: number,
+    toLat: number,
+    toLon: number,
+    currentLat: number,
+    currentLon: number
+  }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await axios.get<Flight[]>("http://localhost:3000/flights");
+        const data = response.data;
+        console.log(data);
+        setFlights(data);
+      } catch(err) {
+        console.error(err);
+      }
+    })()
+  }, [])
 
   return (
     <div className="App">

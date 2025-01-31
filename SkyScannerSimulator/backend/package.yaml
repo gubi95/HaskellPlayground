@@ -30,6 +30,7 @@ dependencies:
 - extra == 1.7.16
 - mtl == 2.3.1
 - http-types == 0.12.4
+- wai-cors == 0.2.7
 
 ghc-options:
 - -Wall

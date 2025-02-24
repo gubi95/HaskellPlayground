@@ -11,8 +11,9 @@ import GHC.Generics (Generic)
 import Network.HTTP.Types (internalServerError500)
 import Plane (kind, planeKindToString)
 import Ports (GetAllFlights)
-import SqlAdapter (SqlAdapterError)
+import SqlAdapter (SqlAdapterError, describeError)
 import Web.Scotty (ActionM, json, raiseStatus)
+import Data.String (IsString(fromString))
 
 data FlightDto = FlightDto
   { id :: Int,
@@ -47,4 +48,4 @@ execute buildGetFlights = do
 
   case result of
     Right flights -> json $ flightToDto <$> flights
-    Left _ -> raiseStatus internalServerError500 "Error occurred while fetching flights"
+    Left e -> raiseStatus internalServerError500 (fromString . describeError $ e)

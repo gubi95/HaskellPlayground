@@ -1,0 +1,3 @@
+{
+    "sqlConnectionString": "DRIVER={ODBC Driver 17 for SQL Server};Server=localhost, 1499;Database=SimulatorService;Uid=sa;Pwd=Secret!Passw0rd;Connection Timeout=30"
+}

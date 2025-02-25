@@ -1,5 +1,6 @@
 module CompositionRoot (buildGetAllFlights) where
 
+import Config (Config (..))
 import Control.Exception (catch)
 import Control.Monad.Except (ExceptT (ExceptT), runExceptT)
 import Database.HDBC.ODBC (Connection, connectODBC)
@@ -7,16 +8,16 @@ import FlightAdapter (getAllFlights)
 import Ports
 import SqlAdapter
 
-getDbConnection :: () -> IO (Either SqlAdapterError Database.HDBC.ODBC.Connection)
-getDbConnection () = do
+getDbConnection :: String -> IO (Either SqlAdapterError Database.HDBC.ODBC.Connection)
+getDbConnection connectionString = do
   catch
     ( do
-        connection <- connectODBC "DRIVER={ODBC Driver 17 for SQL Server};Server=localhost, 1499;Database=SimulatorService;Uid=sa;Pwd=Secret!Passw0rd;Connection Timeout=30"
+        connection <- connectODBC connectionString
         pure $ Right connection
     )
     (pure . Left . GeneralError)
 
-buildGetAllFlights :: GetAllFlights SqlAdapterError
-buildGetAllFlights = runExceptT $ do
-  connection <- ExceptT $ getDbConnection ()
+buildGetAllFlights :: Config -> GetAllFlights SqlAdapterError
+buildGetAllFlights config = runExceptT $ do
+  connection <- ExceptT $ getDbConnection config.sqlConnectionString
   ExceptT $ getAllFlights connection

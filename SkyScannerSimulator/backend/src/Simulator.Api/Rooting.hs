@@ -2,13 +2,17 @@
 
 module Rooting (rooting) where
 
-import Web.Scotty (get, scotty, middleware)
-import GetFlights
 import CompositionRoot (buildGetAllFlights)
+import Config (getConfig)
+import GetFlights
 import Network.Wai.Middleware.Cors
+import Web.Scotty (get, middleware, scotty)
 
 rooting :: IO ()
-rooting =
+rooting = do
+  configResult <- getConfig "/src/Simulator.Api/config.json"
+  config <- either fail pure configResult
+
   scotty 3000 $ do
     middleware simpleCors
-    get "/flights" $ GetFlights.execute buildGetAllFlights
+    get "/flights" $ GetFlights.execute . buildGetAllFlights $ config

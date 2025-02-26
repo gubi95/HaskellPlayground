@@ -1,7 +1,6 @@
 module FlightAdapter (getAllFlights) where
 
 import Control.Arrow (ArrowChoice (right), left)
-import Control.Exception (catch)
 import Control.Monad.Except
 import Coordinates
 import Database.HDBC
@@ -15,7 +14,7 @@ getAllFlights :: Connection -> GetAllFlights SqlAdapterError
 getAllFlights connection = runExceptT $ do
   sqlValues <-
     ExceptT $
-      catch
+      catchSql
         ( do
             let query =
                   "\

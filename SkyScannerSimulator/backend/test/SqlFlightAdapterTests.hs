@@ -20,7 +20,7 @@ shouldReturnAllFlightsTest =
                   plane = Plane {kind = Boeing777, kilometersPerTick = 10.0},
                   from = Coordinates {lat = 33.94032669067383, lon = -118.4123306274414},
                   to = Coordinates {lat = 40.646148681640625, lon = -73.78596496582031},
-                  currentPosition = Coordinates {lat = 40.646148681640625, lon = -73.78596496582031},
+                  currentPosition = Coordinates {lat = 33.94032669067383, lon = -118.4123306274414},
                   progress = 0.0
                 }
             ]

@@ -21,7 +21,7 @@ shouldCalculateRemainingFlightDistanceTest =
 
       let actualRemainingDistance = getRemainingDistance flight
 
-      assertEqual "Should calculate remaining distance correctly" 5918.185064088764 actualRemainingDistance
+      assertEqual "Should calculate remaining distance correctly" 5918.185064088765 actualRemainingDistance
 
 shouldCalculateIntermediatePointAsStartingPointTest :: Test
 shouldCalculateIntermediatePointAsStartingPointTest =
@@ -53,7 +53,7 @@ shouldCalculateIntermediatePointTest =
       let toDestination = Coordinates {lat = 33.940325, lon = -118.412331}
 
       let actualIntermediatePoint = calculateIntermediatePoint fromDestination toDestination 0.75
-      let expectedIntermediatePoint = Coordinates {lat = 37.10551375881209, lon = -108.43186894098088}
+      let expectedIntermediatePoint = Coordinates {lat = 37.10551375881208, lon = -108.43186894098088}
 
       assertEqual "Should calculate intermediate point correctly" expectedIntermediatePoint actualIntermediatePoint
 

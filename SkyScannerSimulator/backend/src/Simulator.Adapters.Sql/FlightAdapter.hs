@@ -20,6 +20,9 @@ getAllFlights connection = runExceptT $ do
                   "\
                   \SELECT \
                   \f.[Id],\
+                  \f.[Lat] AS [CurrentLat],\
+                  \f.[Lon] AS [CurrentLon],\
+                  \f.[Progress] AS [Progress],\
                   \p.[Model] AS [PlaneModel],\
                   \p.[KilometersPerTick],\
                   \departureAirport.[Lat] AS [DepartureLat],\
@@ -50,6 +53,9 @@ getAllFlights connection = runExceptT $ do
         ( \x -> do
             let parsePlaneModel = left InvalidData . planeKindFromString . fromSql
             flightId <- right fromSql $ getColumnValue "Id" x
+            currentLat <- right fromSql $ getColumnValue "CurrentLat" x
+            currentLon <- right fromSql $ getColumnValue "CurrentLon" x
+            currentProgress <- right fromSql $ getColumnValue "Progress" x
             planeKind <- getColumnValue "PlaneModel" x >>= parsePlaneModel
             departureLat <- right fromSql $ getColumnValue "DepartureLat" x
             departureLon <- right fromSql $ getColumnValue "DepartureLon" x
@@ -59,7 +65,7 @@ getAllFlights connection = runExceptT $ do
 
             pure
               Flight
-                { Flight.id = flightId,
+                { id = flightId,
                   plane =
                     Plane
                       { kind = planeKind,
@@ -67,8 +73,8 @@ getAllFlights connection = runExceptT $ do
                       },
                   from = Coordinates {lat = departureLat, lon = departureLon},
                   to = Coordinates {lat = arrivalLat, lon = arrivalLon},
-                  currentPosition = Coordinates {lat = arrivalLat, lon = arrivalLon},
-                  progress = 0.0
+                  currentPosition = Coordinates {lat = currentLat, lon = currentLon},
+                  progress = currentProgress
                 }
         )
         sqlValues

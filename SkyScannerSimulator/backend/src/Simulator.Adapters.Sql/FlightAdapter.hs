@@ -1,4 +1,4 @@
-module FlightAdapter (getAllFlights) where
+module FlightAdapter (getAllFlights, updateFlight) where
 
 import Control.Arrow (ArrowChoice (right), left)
 import Control.Monad.Except
@@ -7,7 +7,7 @@ import Database.HDBC
 import Database.HDBC.ODBC
 import Flight (Flight (..))
 import Plane (Plane (..), planeKindFromString)
-import Ports (GetAllFlights)
+import Ports (GetAllFlights, UpdateFlight)
 import SqlAdapter (SqlAdapterError (..), getColumnValue)
 
 getAllFlights :: Connection -> GetAllFlights SqlAdapterError
@@ -78,3 +78,27 @@ getAllFlights connection = runExceptT $ do
                 }
         )
         sqlValues
+
+updateFlight :: Connection -> UpdateFlight SqlAdapterError
+updateFlight connection flight =
+  runExceptT $ do
+    ExceptT $
+      catchSql
+        ( do
+            let query = "UPDATE [SimulatorService].[Flights] SET [Lat] = ?, [Lon] = ?, [Progress] = ? WHERE [Id] = ?"
+
+            stmt <- prepare connection query
+
+            _ <-
+              execute
+                stmt
+                [ toSql flight.currentPosition.lat,
+                  toSql flight.currentPosition.lon,
+                  toSql flight.progress,
+                  toSql flight.id
+                ]
+
+            return $ Right ()
+        )
+        ( pure . Left . GeneralError
+        )

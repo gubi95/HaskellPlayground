@@ -1,17 +1,18 @@
 module SqlFlightAdapterTests (tests) where
 
 import Coordinates
-import Database.HDBC.ODBC (connectODBC)
+import Database.HDBC.ODBC (Connection (setAutoCommit), connectODBC)
 import Flight
-import FlightAdapter (getAllFlights)
+import FlightAdapter (getAllFlights, updateFlight)
 import Plane
+import SqlAdapter (describeError)
 import Test.HUnit (Test (TestCase, TestLabel, TestList), assertEqual)
 
-shouldReturnAllFlightsTest :: Test
-shouldReturnAllFlightsTest =
+shouldReturnAllFlightsTest :: String -> Test
+shouldReturnAllFlightsTest connectionString =
   TestCase $
     do
-      connection <- connectODBC "DRIVER={ODBC Driver 17 for SQL Server};Server=localhost, 1499;Database=SimulatorService;Uid=sa;Pwd=Secret!Passw0rd;Connection Timeout=30"
+      connection <- connectODBC connectionString
       actualFlights <- getAllFlights connection
 
       let expectedFlights =
@@ -27,8 +28,33 @@ shouldReturnAllFlightsTest =
 
       assertEqual "Should return flights" (Right expectedFlights) actualFlights
 
-tests :: Test
-tests =
+shouldUpdateFlightTest :: String -> Test
+shouldUpdateFlightTest connectionString =
+  TestCase $
+    do
+      connection1 <- connectODBC connectionString
+      _ <- setAutoCommit connection1 True
+      actualFlights <- either (error . describeError) Prelude.id <$> getAllFlights connection1
+
+      let flight = head actualFlights
+
+      let updatedFlight = flight {progress = 50}
+
+      connection2 <- connectODBC connectionString
+      _ <- setAutoCommit connection2 True
+      _ <- either (error . describeError) Prelude.id <$> updateFlight connection2 updatedFlight
+
+      connection3 <- connectODBC connectionString
+      _ <- setAutoCommit connection3 True
+      actualUpdatedFlights <- either (fail . describeError) Prelude.id <$> getAllFlights connection3
+
+      let actualUpdatedFlight = head actualUpdatedFlights
+
+      assertEqual "Should return updated flight" updatedFlight actualUpdatedFlight
+
+tests :: String -> Test
+tests connectionString =
   TestList
-    [ TestLabel "Should return all flights" shouldReturnAllFlightsTest
+    [ TestLabel "Should return all flights" $ shouldReturnAllFlightsTest connectionString,
+      TestLabel "Should update flight" $ shouldUpdateFlightTest connectionString
     ]

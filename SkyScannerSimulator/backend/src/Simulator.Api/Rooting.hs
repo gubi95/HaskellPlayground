@@ -2,11 +2,12 @@
 
 module Rooting (rooting) where
 
-import CompositionRoot (buildGetAllFlights)
+import CompositionRoot (buildGetAllFlights, buildTickFlightWorkflow)
 import Config (getConfig)
-import GetFlights
+import qualified GetFlights
 import Network.Wai.Middleware.Cors
-import Web.Scotty (get, middleware, scotty)
+import qualified TickFlight (execute)
+import Web.Scotty (captureParam, get, middleware, post, scotty)
 
 rooting :: IO ()
 rooting = do
@@ -16,3 +17,6 @@ rooting = do
   scotty 3000 $ do
     middleware simpleCors
     get "/flights" $ GetFlights.execute . buildGetAllFlights $ config
+    post "/flights/:id" $ do
+      flightId <- captureParam "id"
+      TickFlight.execute (buildTickFlightWorkflow config) flightId

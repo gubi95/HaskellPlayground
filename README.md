@@ -1,5 +1,9 @@
 Repo contains following `playground` Haskell projects:
 
+# SkyScannerSimulator
+
+![alt text](SkyScannerSimulator/backend/image.png)
+
 # Tree Drawer
 
 Allows to create binary tree and draw it using `level` traversal from top to bottom

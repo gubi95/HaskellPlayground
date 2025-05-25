@@ -18,7 +18,13 @@ CREATE TABLE [SimulatorService].[Airport] (
 )
 
 INSERT INTO [SimulatorService].[Airport] ([Code], [Lat], [Lon])
-VALUES ('JFK', 40.646149, -73.785964), ('LAX', 33.940325, -118.412331)
+VALUES 
+('JFK', 40.646149, -73.785964),
+('LAX', 33.940325, -118.412331),
+('WAW', 52.165833, 20.967222),
+('NBO', -1.319167, 36.927778),
+('SYD', -33.946111, 151.177222),
+('PEK', 40.08, 116.584444)
 
 CREATE TABLE [SimulatorService].[Flights] (
     [Id] INT NOT NULL IDENTITY PRIMARY KEY,
@@ -41,4 +47,22 @@ VALUES (
     (SELECT [Id] FROM [SimulatorService].[Airport] WHERE [Code] = 'JFK'),    
     (SELECT [Lat] FROM [SimulatorService].[Airport] WHERE [Code] = 'LAX'),
     (SELECT [Lon] FROM [SimulatorService].[Airport] WHERE [Code] = 'LAX'),
-    0.0)
+    0.0);
+
+INSERT INTO [SimulatorService].[Flights] ([PlaneId], [DepartureAirportId], [ArrivalAirportId], [Lat], [Lon], [Progress])
+VALUES (
+    (SELECT [Id] FROM [SimulatorService].[Plane] WHERE [Model] = 'Airbus A320'),
+    (SELECT [Id] FROM [SimulatorService].[Airport] WHERE [Code] = 'WAW'),
+    (SELECT [Id] FROM [SimulatorService].[Airport] WHERE [Code] = 'NBO'),    
+    (SELECT [Lat] FROM [SimulatorService].[Airport] WHERE [Code] = 'WAW'),
+    (SELECT [Lon] FROM [SimulatorService].[Airport] WHERE [Code] = 'WAW'),
+    0.0);
+
+INSERT INTO [SimulatorService].[Flights] ([PlaneId], [DepartureAirportId], [ArrivalAirportId], [Lat], [Lon], [Progress])
+VALUES (
+    (SELECT [Id] FROM [SimulatorService].[Plane] WHERE [Model] = 'Airbus A380'),
+    (SELECT [Id] FROM [SimulatorService].[Airport] WHERE [Code] = 'SYD'),
+    (SELECT [Id] FROM [SimulatorService].[Airport] WHERE [Code] = 'PEK'),    
+    (SELECT [Lat] FROM [SimulatorService].[Airport] WHERE [Code] = 'SYD'),
+    (SELECT [Lon] FROM [SimulatorService].[Airport] WHERE [Code] = 'SYD'),
+    0.0);

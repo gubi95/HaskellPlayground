@@ -39,13 +39,13 @@ function App() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get<Flight[]>("http://localhost:3000/flights");
+        const response = await axios.get<Flight[]>("http://localhost:3100/flights");
 
         if (!isUpdatingFlights) {
           isUpdatingFlights = true;
           await Promise.all(
             response.data.map(async (flight) => {
-              await axios.post(`http://localhost:3000/flights/${flight.id}`);
+              await axios.post(`http://localhost:3100/flights/${flight.id}`);
             })
           );
           isUpdatingFlights = false;

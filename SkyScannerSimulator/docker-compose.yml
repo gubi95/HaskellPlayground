@@ -1,10 +1,13 @@
-version: '3.7'
 services:
   db:
-    build: db/
+    build: backend/db/
     ports:
       - '1499:1433'
 
     environment:
       SA_PASSWORD: "Secret!Passw0rd"
       ACCEPT_EULA: "Y"
+  frontend-app:
+    build: frontend/sky-scanner-simulator
+    ports:
+      - '3000:3000'

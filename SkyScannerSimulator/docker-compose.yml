@@ -11,3 +11,9 @@ services:
     build: frontend/sky-scanner-simulator
     ports:
       - '3000:3000'
+  backend-app:
+    build: backend/
+    ports:
+      - '3100:3100'
+    depends_on:
+      - db

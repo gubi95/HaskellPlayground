@@ -1,0 +1,15 @@
+FROM ubuntu:22.04
+
+RUN apt-get update -y
+RUN apt-get install -y curl
+RUN apt-get install -y unixodbc-dev
+
+RUN curl -sSL https://get.haskellstack.org/ | sh
+
+RUN mkdir /app
+COPY . /app
+WORKDIR /app
+
+RUN stack build
+
+CMD ["stack", "run"]

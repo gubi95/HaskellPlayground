@@ -2,11 +2,10 @@ services:
   db:
     build: backend/db/
     ports:
-      - '1499:1433'
+      - '5432:5432'
 
     environment:
-      SA_PASSWORD: "Secret!Passw0rd"
-      ACCEPT_EULA: "Y"
+      POSTGRES_PASSWORD: "Secret!Passw0rd"
   frontend-app:
     build: frontend/sky-scanner-simulator
     ports:

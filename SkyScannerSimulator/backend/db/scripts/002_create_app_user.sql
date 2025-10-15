@@ -1,0 +1,1 @@
+CREATE USER appuser WITH ENCRYPTED PASSWORD 'Secret!Passw0rd';

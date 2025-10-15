@@ -1,16 +1,6 @@
-FROM mcr.microsoft.com/mssql/server:2022-CU13-ubuntu-22.04
+FROM postgres:latest
 
-USER root
+COPY scripts/* /docker-entrypoint-initdb.d/
 
-COPY ./scripts/ /scripts
+EXPOSE 5432
 
-COPY ./init-db.sh init-db.sh
-RUN chmod +x init-db.sh
-
-COPY ./entrypoint.sh entrypoint.sh
-RUN chmod +x entrypoint.sh
-
-EXPOSE 1435
-
-USER mssql
-CMD /bin/bash entrypoint.sh

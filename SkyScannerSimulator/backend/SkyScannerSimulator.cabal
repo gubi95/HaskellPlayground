@@ -54,6 +54,7 @@ library
   build-depends:
       HDBC ==2.4.0.4
     , HDBC-odbc ==2.6.0.0
+    , HDBC-postgresql ==2.5.0.1
     , HUnit ==1.6.2.0
     , aeson >=2.1.2.1
     , base >=4.7 && <5
@@ -77,6 +78,7 @@ executable SkyScannerSimulator-exe
   build-depends:
       HDBC ==2.4.0.4
     , HDBC-odbc ==2.6.0.0
+    , HDBC-postgresql ==2.5.0.1
     , HUnit ==1.6.2.0
     , SkyScannerSimulator
     , aeson >=2.1.2.1
@@ -104,6 +106,7 @@ test-suite SkyScannerSimulator-test
   build-depends:
       HDBC ==2.4.0.4
     , HDBC-odbc ==2.6.0.0
+    , HDBC-postgresql ==2.5.0.1
     , HUnit ==1.6.2.0
     , SkyScannerSimulator
     , aeson >=2.1.2.1

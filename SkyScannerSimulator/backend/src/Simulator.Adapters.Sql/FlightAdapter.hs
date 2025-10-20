@@ -5,33 +5,33 @@ import Control.Monad.Except
 import Coordinates
 import Data.Map
 import Database.HDBC
-import Database.HDBC.ODBC
 import Flight (Flight (..))
 import Plane (Plane (..), planeKindFromString)
 import Ports (GetAllFlights, GetFlight, UpdateFlight)
 import SqlAdapter (SqlAdapterError (..), getColumnValue)
+import Database.HDBC.PostgreSQL (Connection)
 
 selectFlightQuery :: String
 selectFlightQuery =
   "\
   \SELECT \
-  \f.[Id],\
-  \f.[Lat] AS [CurrentLat],\
-  \f.[Lon] AS [CurrentLon],\
-  \f.[Progress] AS [Progress],\
-  \p.[Model] AS [PlaneModel],\
-  \p.[KilometersPerTick],\
-  \departureAirport.[Lat] AS [DepartureLat],\
-  \departureAirport.[Lon] AS [DepartureLon],\
-  \arrivalAirport.[Lat] AS [ArrivalLat],\
-  \arrivalAirport.[Lon] AS [ArrivalLon] \
-  \FROM [SimulatorService].[Flights] f \
-  \INNER JOIN [SimulatorService].[Plane] p \
-  \ON f.[PlaneId] = p.[Id]\
-  \INNER JOIN [SimulatorService].[Airport] departureAirport \
-  \ON f.[DepartureAirportId] = departureAirport.[Id] \
-  \INNER JOIN [SimulatorService].[Airport] arrivalAirport \
-  \ON f.[ArrivalAirportId] = arrivalAirport.[Id]\
+  \f.Id,\
+  \f.Lat AS CurrentLat,\
+  \f.Lon AS CurrentLon,\
+  \f.Progress AS Progress,\
+  \p.Model AS PlaneModel,\
+  \p.KilometersPerTick,\
+  \departureAirport.Lat AS DepartureLat,\
+  \departureAirport.Lon AS DepartureLon,\
+  \arrivalAirport.Lat AS ArrivalLat,\
+  \arrivalAirport.Lon AS ArrivalLon \
+  \FROM SimulatorService.Flights f \
+  \INNER JOIN SimulatorService.Plane p \
+  \ON f.PlaneId = p.Id \
+  \INNER JOIN SimulatorService.Airport departureAirport \
+  \ON f.DepartureAirportId = departureAirport.Id \
+  \INNER JOIN SimulatorService.Airport arrivalAirport \
+  \ON f.ArrivalAirportId = arrivalAirport.Id \
   \"
 
 parseFlightDto :: Map String SqlValue -> Either SqlAdapterError Flight
@@ -88,7 +88,7 @@ getFlight connection flightId = runExceptT $ do
     ExceptT $
       catchSql
         ( do
-            let query = selectFlightQuery ++ " WHERE f.[Id] = ?"
+            let query = selectFlightQuery ++ " WHERE f.id = ?"
             stmt <- prepare connection query
 
             _ <- execute stmt [toSql flightId]
@@ -108,7 +108,7 @@ updateFlight connection flight =
     ExceptT $
       catchSql
         ( do
-            let query = "UPDATE [SimulatorService].[Flights] SET [Lat] = ?, [Lon] = ?, [Progress] = ? WHERE [Id] = ?"
+            let query = "UPDATE SimulatorService.Flights SET lat = ?, lon = ?, progress = ? WHERE id = ?"
 
             stmt <- prepare connection query
 
@@ -120,6 +120,8 @@ updateFlight connection flight =
                   toSql flight.progress,
                   toSql flight.id
                 ]
+
+            _ <- commit connection
 
             return $ Right ()
         )

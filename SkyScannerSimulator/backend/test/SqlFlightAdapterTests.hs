@@ -1,18 +1,18 @@
 module SqlFlightAdapterTests (tests) where
 
 import Coordinates
-import Database.HDBC.ODBC (Connection (setAutoCommit), connectODBC)
 import Flight
 import FlightAdapter (getAllFlights, updateFlight)
 import Plane
 import SqlAdapter (describeError)
 import Test.HUnit (Test (TestCase, TestLabel, TestList), assertEqual)
+import Database.HDBC.PostgreSQL (connectPostgreSQL)
 
 shouldReturnAllFlightsTest :: String -> Test
 shouldReturnAllFlightsTest connectionString =
   TestCase $
     do
-      connection <- connectODBC connectionString
+      connection <- connectPostgreSQL connectionString
       actualFlights <- getAllFlights connection
 
       let expectedFlights =
@@ -32,20 +32,17 @@ shouldUpdateFlightTest :: String -> Test
 shouldUpdateFlightTest connectionString =
   TestCase $
     do
-      connection1 <- connectODBC connectionString
-      _ <- setAutoCommit connection1 True
+      connection1 <- connectPostgreSQL connectionString
       actualFlights <- either (error . describeError) Prelude.id <$> getAllFlights connection1
 
       let flight = head actualFlights
 
       let updatedFlight = flight {progress = 50}
 
-      connection2 <- connectODBC connectionString
-      _ <- setAutoCommit connection2 True
+      connection2 <- connectPostgreSQL connectionString
       _ <- either (error . describeError) Prelude.id <$> updateFlight connection2 updatedFlight
 
-      connection3 <- connectODBC connectionString
-      _ <- setAutoCommit connection3 True
+      connection3 <- connectPostgreSQL connectionString
       actualUpdatedFlights <- either (fail . describeError) Prelude.id <$> getAllFlights connection3
 
       let actualUpdatedFlight = head actualUpdatedFlights

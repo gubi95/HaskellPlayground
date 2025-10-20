@@ -1,5 +1,6 @@
 module SqlAdapter (SqlAdapterError (..), getColumnValue, describeError) where
 
+import Data.Char (toLower)
 import Data.Either.Extra (maybeToEither)
 import Data.Map (Map, lookup)
 import Database.HDBC
@@ -16,5 +17,6 @@ describeError (MissingColumnsInQueryResult e) = e
 describeError (InvalidData e) = e
 
 getColumnValue :: String -> Map String SqlValue -> Either SqlAdapterError SqlValue
-getColumnValue columnName x =
-  maybeToEither (MissingColumnsInQueryResult $ "Missing column: " ++ columnName) (Data.Map.lookup columnName x)
+getColumnValue columnName x = do
+  let loweredColumnName = map toLower columnName
+  maybeToEither (MissingColumnsInQueryResult $ "Missing column: " ++ loweredColumnName) (Data.Map.lookup loweredColumnName x)

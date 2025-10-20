@@ -42,6 +42,7 @@ packages:
 #
 extra-deps:
 - HDBC-odbc-2.6.0.0@sha256:4fbd28f437cb2f1707d77aa81a356870d84407942c89c20c7613f99f3bb0eb5d,2730
+- HDBC-postgresql-2.5.0.1@sha256:37bb911cd996d12c91fa711002877f32f91bcc488de76d85a05865c3af9dc580,3032
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

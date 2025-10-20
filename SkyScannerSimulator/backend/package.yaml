@@ -26,6 +26,7 @@ dependencies:
 - HUnit == 1.6.2.0
 - HDBC == 2.4.0.4
 - HDBC-odbc == 2.6.0.0
+- HDBC-postgresql == 2.5.0.1
 - containers == 0.6.7
 - extra == 1.7.16
 - mtl == 2.3.1

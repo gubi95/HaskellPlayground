@@ -3,7 +3,7 @@
 module GetFlights (execute) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import Coordinates (Coordinates (lat), lon)
+import Coordinates (Coordinates (lat), lon, getRawCoordinateValue)
 import Data.Aeson (ToJSON)
 import Flight
 import GHC.Generics (Generic)
@@ -31,12 +31,12 @@ flightToDto flight =
   FlightDto
     { id = flight.id,
       plane = planeKindToString flight.plane.kind,
-      fromLat = flight.from.lat,
-      fromLon = flight.from.lon,
-      toLat = flight.to.lat,
-      toLon = flight.to.lon,
-      currentLat = flight.currentPosition.lat,
-      currentLon = flight.currentPosition.lon
+      fromLat = getRawCoordinateValue flight.from.location.lat,
+      fromLon = getRawCoordinateValue flight.from.location.lon,
+      toLat = getRawCoordinateValue flight.to.location.lat,
+      toLon = getRawCoordinateValue flight.to.location.lon,
+      currentLat = getRawCoordinateValue flight.currentPosition.lat,
+      currentLon = getRawCoordinateValue flight.currentPosition.lon
     }
 
 instance ToJSON FlightDto

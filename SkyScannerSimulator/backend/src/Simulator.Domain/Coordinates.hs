@@ -1,8 +1,19 @@
-module Coordinates (Coordinates (..), calculateIntermediatePoint, calculateDistance) where
+module Coordinates (Coordinates (..), calculateIntermediatePoint, calculateDistance, createCoordinateValue, getRawCoordinateValue) where
 
 import qualified GHC.Float as Math
+import MathUtils (truncate')
 
-data Coordinates = Coordinates {lat :: Double, lon :: Double} deriving (Eq, Show)
+newtype CoordinateValue = CoordinateValue Double deriving (Eq, Show)
+
+data Coordinates = Coordinates {lat :: CoordinateValue, lon :: CoordinateValue} deriving (Eq, Show)
+
+createCoordinateValue :: Double -> CoordinateValue
+createCoordinateValue value = do
+  let truncated = truncate' value 5
+  CoordinateValue truncated
+
+getRawCoordinateValue :: CoordinateValue -> Double
+getRawCoordinateValue (CoordinateValue value) = value
 
 degreesToRadians :: Double -> Double
 degreesToRadians degrees =
@@ -13,10 +24,10 @@ earthRadiusKm = 6371.0
 
 calculateDistance :: Coordinates -> Coordinates -> Double
 calculateDistance f t = do
-  let lat2 = lat t
-  let lat1 = lat f
-  let lon2 = lon t
-  let lon1 = lon f
+  let (CoordinateValue lat2) = lat t
+  let (CoordinateValue lat1) = lat f
+  let (CoordinateValue lon2) = lon t
+  let (CoordinateValue lon1) = lon f
 
   let dLat = degreesToRadians (lat2 - lat1)
   let dLon = degreesToRadians (lon2 - lon1)
@@ -36,10 +47,15 @@ calculateIntermediatePoint f t dist = do
   let a = Math.sin ((1 - dist) * angular) / Math.sin angular
   let b = Math.sin (dist * angular) / Math.sin angular
 
-  let lat1 = degreesToRadians $ lat f
-  let lat2 = degreesToRadians $ lat t
-  let lon1 = degreesToRadians $ lon f
-  let lon2 = degreesToRadians $ lon t
+  let (CoordinateValue lat2Value) = lat t
+  let (CoordinateValue lat1Value) = lat f
+  let (CoordinateValue lon2Value) = lon t
+  let (CoordinateValue lon1Value) = lon f
+
+  let lat1 = degreesToRadians lat1Value
+  let lat2 = degreesToRadians lat2Value
+  let lon1 = degreesToRadians lon1Value
+  let lon2 = degreesToRadians lon2Value
 
   let x =
         a * Math.cos lat1 * Math.cos lon1
@@ -56,4 +72,4 @@ calculateIntermediatePoint f t dist = do
 
   let intermediateLat = lat3 / constant
   let intermediateLon = lon3 / constant
-  Coordinates {lat = intermediateLat, lon = intermediateLon}
+  Coordinates {lat = createCoordinateValue intermediateLat, lon = createCoordinateValue intermediateLon}

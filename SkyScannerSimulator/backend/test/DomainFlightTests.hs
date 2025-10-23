@@ -1,7 +1,7 @@
 module DomainFlightTests (tests) where
 
-import Coordinates (Coordinates (..))
-import Flight (Flight (..), calculateIntermediatePoint, getRemainingDistance, tick)
+import Coordinates (Coordinates (..), createCoordinateValue)
+import Flight (Airport (..), Flight (..), calculateIntermediatePoint, getRemainingDistance, tick)
 import Plane
 import Test.HUnit
 
@@ -13,22 +13,22 @@ shouldCalculateRemainingFlightDistanceTest =
             Flight
               { Flight.id = 1,
                 plane = Plane {kind = AirbusA380, kilometersPerTick = 10.0},
-                from = Coordinates {lat = 51.5, lon = 0.0},
-                to = Coordinates {lat = 38.8, lon = -77.1},
-                currentPosition = Coordinates {lat = 51.5, lon = 0.0},
+                from = Airport {location = Coordinates {lat = createCoordinateValue 51.5, lon = createCoordinateValue 0.0}, code = "C1"},
+                to = Airport {location = Coordinates {lat = createCoordinateValue 38.8, lon = createCoordinateValue (-77.1)}, code = "C2"},
+                currentPosition = Coordinates {lat = createCoordinateValue 51.5, lon = createCoordinateValue 0.0},
                 progress = 0.0
               }
 
       let actualRemainingDistance = getRemainingDistance flight
 
-      assertEqual "Should calculate remaining distance correctly" 5918.185064088765 actualRemainingDistance
+      assertEqual "Should calculate remaining distance correctly" 5918 actualRemainingDistance
 
 shouldCalculateIntermediatePointAsStartingPointTest :: Test
 shouldCalculateIntermediatePointAsStartingPointTest =
   TestCase $
     do
-      let fromDestination = Coordinates {lat = 40.646149, lon = -73.785964}
-      let toDestination = Coordinates {lat = 33.940325, lon = -118.412331}
+      let fromDestination = Coordinates {lat = createCoordinateValue 40.646149, lon = createCoordinateValue (-73.785964)}
+      let toDestination = Coordinates {lat = createCoordinateValue 33.940325, lon = createCoordinateValue (-118.412331)}
 
       let actualIntermediatePoint = calculateIntermediatePoint fromDestination toDestination 0.0
 
@@ -38,8 +38,8 @@ shouldCalculateIntermediatePointAsEndingPointTest :: Test
 shouldCalculateIntermediatePointAsEndingPointTest =
   TestCase $
     do
-      let fromDestination = Coordinates {lat = 40.646149, lon = -73.785964}
-      let toDestination = Coordinates {lat = 33.940325, lon = -118.412331}
+      let fromDestination = Coordinates {lat = createCoordinateValue 40.646149, lon = createCoordinateValue (-73.785964)}
+      let toDestination = Coordinates {lat = createCoordinateValue 33.940325, lon = createCoordinateValue (-118.412331)}
 
       let actualIntermediatePoint = calculateIntermediatePoint fromDestination toDestination 1.0
 
@@ -49,11 +49,11 @@ shouldCalculateIntermediatePointTest :: Test
 shouldCalculateIntermediatePointTest =
   TestCase $
     do
-      let fromDestination = Coordinates {lat = 40.646149, lon = -73.785964}
-      let toDestination = Coordinates {lat = 33.940325, lon = -118.412331}
+      let fromDestination = Coordinates {lat = createCoordinateValue 40.646149, lon = createCoordinateValue (-73.785964)}
+      let toDestination = Coordinates {lat = createCoordinateValue 33.940325, lon = createCoordinateValue (-118.412331)}
 
       let actualIntermediatePoint = calculateIntermediatePoint fromDestination toDestination 0.75
-      let expectedIntermediatePoint = Coordinates {lat = 37.10551375881208, lon = -108.43186894098088}
+      let expectedIntermediatePoint = Coordinates {lat = createCoordinateValue 37.10550, lon = createCoordinateValue (-108.43188)}
 
       assertEqual "Should calculate intermediate point correctly" expectedIntermediatePoint actualIntermediatePoint
 
@@ -62,15 +62,15 @@ flightShouldReachItsDestinationByTickingTest =
   TestCase $
     do
       let p = Plane {kind = AirbusA380, kilometersPerTick = 10.0}
-      let fromDestination = Coordinates {lat = 47.20761, lon = 27.02185}
-      let toDestination = Coordinates {lat = 47.80543, lon = 27.02177}
+      let fromDestination = Airport {location = Coordinates {lat = createCoordinateValue 47.20761, lon = createCoordinateValue 27.02185}, code = "C1"}
+      let toDestination = Airport {location = Coordinates {lat = createCoordinateValue 47.80543, lon = createCoordinateValue 27.02177}, code = "C2"}
       let flight =
             Flight
               { Flight.id = 1,
                 plane = p,
                 from = fromDestination,
                 to = toDestination,
-                currentPosition = fromDestination,
+                currentPosition = location fromDestination,
                 progress = 0.0
               }
 
@@ -82,7 +82,7 @@ flightShouldReachItsDestinationByTickingTest =
                 plane = p,
                 from = fromDestination,
                 to = toDestination,
-                currentPosition = toDestination,
+                currentPosition = location toDestination,
                 progress = 1.0
               }
 

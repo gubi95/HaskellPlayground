@@ -19,15 +19,15 @@ CREATE TABLE SimulatorService.Airport (
 
 INSERT INTO SimulatorService.Airport (Code, Lat, Lon)
 VALUES 
-('JFK', 40.646149, -73.785964),
-('LAX', 33.940325, -118.412331),
-('WAW', 52.165833, 20.967222),
-('NBO', -1.319167, 36.927778),
-('SYD', -33.946111, 151.177222),
-('PEK', 40.08, 116.584444);
+('JFK', 40.64614, -73.78596),
+('LAX', 33.94032, -118.41233),
+('WAW', 52.16583, 20.96722),
+('NBO', -1.31916, 36.92777),
+('SYD', -33.94611, 151.17722),
+('PEK', 40.08000, 116.58444);
 
 CREATE TABLE SimulatorService.Flights (
-    Id SERIAL PRIMARY KEY,
+    Id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     PlaneId INT NOT NULL,
     DepartureAirportId INT NOT NULL,
     ArrivalAirportId INT NOT NULL,

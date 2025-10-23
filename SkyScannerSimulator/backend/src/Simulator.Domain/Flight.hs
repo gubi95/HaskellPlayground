@@ -1,32 +1,37 @@
-module Flight (Flight (..), getRemainingDistance, tick, calculateIntermediatePoint) where
+module Flight (Flight (..), Airport (..), getRemainingDistance, tick, calculateIntermediatePoint) where
 
 import Coordinates
 import qualified GHC.Base as Math
 import Plane
 
+data Airport = Airport {
+  code :: String,
+  location :: Coordinates
+} deriving (Eq, Show)
+
 data Flight = Flight
   { id :: Int,
     plane :: Plane,
-    from :: Coordinates,
-    to :: Coordinates,
+    from :: Airport,
+    to :: Airport,
     currentPosition :: Coordinates,
     progress :: Double
   }
   deriving (Eq, Show)
 
-getRemainingDistance :: Flight -> Double
+getRemainingDistance :: Flight -> Int
 getRemainingDistance flight = do
-  calculateDistance (currentPosition flight) (to flight)
+  round (calculateDistance flight.currentPosition flight.to.location)
 
 endFlight :: Flight -> Flight
 endFlight flight =
-  flight {currentPosition = flight.to}
+  flight {currentPosition = flight.to.location}
 
 tick :: Flight -> Flight
 tick flight = do
-  let fractionPerTick = flight.plane.kilometersPerTick / calculateDistance flight.from flight.to
+  let fractionPerTick = flight.plane.kilometersPerTick / calculateDistance flight.from.location flight.to.location
   let tickFractionProgress = Math.min 1.0 (flight.progress + fractionPerTick)
-  let intermediatePoint = calculateIntermediatePoint flight.from flight.to tickFractionProgress
+  let intermediatePoint = calculateIntermediatePoint flight.from.location flight.to.location tickFractionProgress
 
   let updatedFlight = flight {currentPosition = intermediatePoint, progress = tickFractionProgress}
 

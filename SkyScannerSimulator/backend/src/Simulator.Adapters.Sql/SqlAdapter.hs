@@ -9,12 +9,14 @@ data SqlAdapterError
   = GeneralError SqlError
   | MissingColumnsInQueryResult String
   | InvalidData String
+  | MissingInsertedRecordId String
   deriving (Show, Eq)
 
 describeError :: SqlAdapterError -> String
 describeError (GeneralError a) = a.seErrorMsg
 describeError (MissingColumnsInQueryResult e) = e
 describeError (InvalidData e) = e
+describeError (MissingInsertedRecordId e) = e
 
 getColumnValue :: String -> Map String SqlValue -> Either SqlAdapterError SqlValue
 getColumnValue columnName x = do

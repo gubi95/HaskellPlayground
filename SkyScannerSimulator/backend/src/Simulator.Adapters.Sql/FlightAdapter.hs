@@ -1,15 +1,15 @@
-module FlightAdapter (getAllFlights, getFlight, updateFlight) where
+module FlightAdapter (getAllFlights, getFlight, createFlight, updateFlight, deleteFlight) where
 
 import Control.Arrow (ArrowChoice (right), left)
 import Control.Monad.Except
 import Coordinates
 import Data.Map
 import Database.HDBC
-import Flight (Flight (..))
-import Plane (Plane (..), planeKindFromString)
-import Ports (GetAllFlights, GetFlight, UpdateFlight)
-import SqlAdapter (SqlAdapterError (..), getColumnValue)
 import Database.HDBC.PostgreSQL (Connection)
+import Flight (Airport (..), Flight (..))
+import Plane (Plane (..), planeKindFromString, planeKindToString)
+import Ports (CreateFlight, DeleteFlight, GetAllFlights, GetFlight, UpdateFlight)
+import SqlAdapter (SqlAdapterError (..), getColumnValue)
 
 selectFlightQuery :: String
 selectFlightQuery =
@@ -23,8 +23,10 @@ selectFlightQuery =
   \p.KilometersPerTick,\
   \departureAirport.Lat AS DepartureLat,\
   \departureAirport.Lon AS DepartureLon,\
+  \departureAirport.Code AS DepartureAirportCode,\
   \arrivalAirport.Lat AS ArrivalLat,\
-  \arrivalAirport.Lon AS ArrivalLon \
+  \arrivalAirport.Lon AS ArrivalLon,\
+  \arrivalAirport.Code AS ArrivalAirportCode \
   \FROM SimulatorService.Flights f \
   \INNER JOIN SimulatorService.Plane p \
   \ON f.PlaneId = p.Id \
@@ -38,14 +40,16 @@ parseFlightDto :: Map String SqlValue -> Either SqlAdapterError Flight
 parseFlightDto x = do
   let parsePlaneModel = left InvalidData . planeKindFromString . fromSql
   flightId <- right fromSql $ getColumnValue "Id" x
-  currentLat <- right fromSql $ getColumnValue "CurrentLat" x
-  currentLon <- right fromSql $ getColumnValue "CurrentLon" x
+  currentLat <- right (createCoordinateValue . fromSql) $ getColumnValue "CurrentLat" x
+  currentLon <- right (createCoordinateValue . fromSql) $ getColumnValue "CurrentLon" x
   currentProgress <- right fromSql $ getColumnValue "Progress" x
   planeKind <- getColumnValue "PlaneModel" x >>= parsePlaneModel
-  departureLat <- right fromSql $ getColumnValue "DepartureLat" x
-  departureLon <- right fromSql $ getColumnValue "DepartureLon" x
-  arrivalLat <- right fromSql $ getColumnValue "ArrivalLat" x
-  arrivalLon <- right fromSql $ getColumnValue "ArrivalLon" x
+  departureLat <- right (createCoordinateValue . fromSql) $ getColumnValue "DepartureLat" x
+  departureLon <- right (createCoordinateValue . fromSql) $ getColumnValue "DepartureLon" x
+  departureAirportCode <- right fromSql $ getColumnValue "DepartureAirportCode" x
+  arrivalLat <- right (createCoordinateValue . fromSql) $ getColumnValue "ArrivalLat" x
+  arrivalLon <- right (createCoordinateValue . fromSql) $ getColumnValue "ArrivalLon" x
+  arrivalAirportCode <- right fromSql $ getColumnValue "ArrivalAirportCode" x
   kmPerTick <- right fromSql $ getColumnValue "KilometersPerTick" x
   pure
     Flight
@@ -55,8 +59,8 @@ parseFlightDto x = do
             { kind = planeKind,
               kilometersPerTick = kmPerTick
             },
-        from = Coordinates {lat = departureLat, lon = departureLon},
-        to = Coordinates {lat = arrivalLat, lon = arrivalLon},
+        from = Airport {location = Coordinates {lat = departureLat, lon = departureLon}, code = departureAirportCode},
+        to = Airport {location = Coordinates {lat = arrivalLat, lon = arrivalLon}, code = arrivalAirportCode},
         currentPosition = Coordinates {lat = currentLat, lon = currentLon},
         progress = currentProgress
       }
@@ -115,11 +119,72 @@ updateFlight connection flight =
             _ <-
               execute
                 stmt
-                [ toSql flight.currentPosition.lat,
-                  toSql flight.currentPosition.lon,
+                [ toSql . getRawCoordinateValue $ flight.currentPosition.lat,
+                  toSql . getRawCoordinateValue $ flight.currentPosition.lon,
                   toSql flight.progress,
                   toSql flight.id
                 ]
+
+            _ <- commit connection
+
+            return $ Right ()
+        )
+        ( pure . Left . GeneralError
+        )
+
+createFlight :: Connection -> CreateFlight SqlAdapterError
+createFlight connection flight =
+  runExceptT $ do
+    ExceptT $
+      catchSql
+        ( do
+            let query =
+                  "\
+                  \INSERT INTO SimulatorService.Flights (planeid, departureairportid, arrivalairportid, lat, lon, progress) \
+                  \VALUES (\
+                  \(SELECT id FROM SimulatorService.Plane WHERE model = ?),\
+                  \(SELECT id FROM SimulatorService.Airport WHERE code = ?),\
+                  \(SELECT id FROM SimulatorService.Airport WHERE code = ?),\
+                  \?,\
+                  \?,\
+                  \?) RETURNING id;"
+
+            stmt <- prepare connection query
+
+            _ <-
+              execute
+                stmt
+                [ toSql (planeKindToString flight.plane.kind),
+                  toSql flight.from.code,
+                  toSql flight.to.code,
+                  toSql . getRawCoordinateValue $ flight.currentPosition.lat,
+                  toSql . getRawCoordinateValue $ flight.currentPosition.lon,
+                  toSql flight.progress
+                ]
+
+            flightId <- fetchRow stmt
+
+            _ <- commit connection
+
+            return $
+              case flightId of
+                Just [sqlId] -> Right (fromSql sqlId :: Int)
+                _ -> Left . MissingInsertedRecordId $ "Failed to retrieve inserted flight ID"
+        )
+        ( pure . Left . GeneralError
+        )
+
+deleteFlight :: Connection -> DeleteFlight SqlAdapterError
+deleteFlight connection flightId =
+  runExceptT $ do
+    ExceptT $
+      catchSql
+        ( do
+            let query = "DELETE FROM SimulatorService.Flights WHERE id = ?"
+
+            stmt <- prepare connection query
+
+            _ <- execute stmt [toSql flightId]
 
             _ <- commit connection
 

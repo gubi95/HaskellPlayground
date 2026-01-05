@@ -28,6 +28,7 @@ library
       Lib
       MaybeTransformer
       ReaderMonad
+      StateMonad
   other-modules:
       Paths_MonadTransformers
   autogen-modules:

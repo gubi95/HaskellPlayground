@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       MaybeTransformer
+      ReaderMonad
   other-modules:
       Paths_MonadTransformers
   autogen-modules:

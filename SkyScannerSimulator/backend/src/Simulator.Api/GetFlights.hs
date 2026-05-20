@@ -8,11 +8,12 @@ import Data.Aeson (ToJSON)
 import Flight
 import GHC.Generics (Generic)
 import Network.HTTP.Types (internalServerError500)
-import Plane (kind, planeKindToString)
+import Plane (kind)
 import Ports (GetAllFlights)
 import SqlAdapter (SqlAdapterError, describeError)
 import Web.Scotty (ActionM, json, raiseStatus)
 import Data.String (IsString(fromString))
+import StorageCodec (StorageCodec(encode))
 
 data FlightDto = FlightDto
   { id :: Int,
@@ -30,7 +31,7 @@ flightToDto :: Flight -> FlightDto
 flightToDto flight =
   FlightDto
     { id = flight.id,
-      plane = planeKindToString flight.plane.kind,
+      plane = StorageCodec.encode flight.plane.kind,
       fromLat = getRawCoordinateValue flight.from.location.lat,
       fromLon = getRawCoordinateValue flight.from.location.lon,
       toLat = getRawCoordinateValue flight.to.location.lat,

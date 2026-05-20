@@ -7,9 +7,10 @@ import Data.Map
 import Database.HDBC
 import Database.HDBC.PostgreSQL (Connection)
 import Flight (Airport (..), Flight (..))
-import Plane (Plane (..), planeKindFromString, planeKindToString)
+import Plane (Plane (..))
 import Ports (CreateFlight, DeleteFlight, GetAllFlights, GetFlight, UpdateFlight)
 import SqlAdapter (SqlAdapterError (..), getColumnValue)
+import qualified StorageCodec(StorageCodec(encode, decode))
 
 selectFlightQuery :: String
 selectFlightQuery =
@@ -38,7 +39,7 @@ selectFlightQuery =
 
 parseFlightDto :: Map String SqlValue -> Either SqlAdapterError Flight
 parseFlightDto x = do
-  let parsePlaneModel = left InvalidData . planeKindFromString . fromSql
+  let parsePlaneModel = left InvalidData . StorageCodec.decode . fromSql
   flightId <- right fromSql $ getColumnValue "Id" x
   currentLat <- right (createCoordinateValue . fromSql) $ getColumnValue "CurrentLat" x
   currentLon <- right (createCoordinateValue . fromSql) $ getColumnValue "CurrentLon" x
@@ -154,7 +155,7 @@ createFlight connection flight =
             _ <-
               execute
                 stmt
-                [ toSql (planeKindToString flight.plane.kind),
+                [ toSql (StorageCodec.encode flight.plane.kind),
                   toSql flight.from.code,
                   toSql flight.to.code,
                   toSql . getRawCoordinateValue $ flight.currentPosition.lat,

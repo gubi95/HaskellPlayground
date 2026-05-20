@@ -36,6 +36,7 @@ library
       MathUtils
       Plane
       Ports
+      StorageCodec
       Workflows.TickFlight
       FlightAdapter
       SqlAdapter

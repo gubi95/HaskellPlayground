@@ -35,7 +35,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      HUnit ==1.6.2.0
+    , base >=4.7 && <5
     , containers ==0.7
   default-language: Haskell2010
 
@@ -49,7 +50,8 @@ executable PrettyJson-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      PrettyJson
+      HUnit ==1.6.2.0
+    , PrettyJson
     , base >=4.7 && <5
     , containers ==0.7
   default-language: Haskell2010
@@ -65,7 +67,8 @@ test-suite PrettyJson-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      PrettyJson
+      HUnit ==1.6.2.0
+    , PrettyJson
     , base >=4.7 && <5
     , containers ==0.7
   default-language: Haskell2010

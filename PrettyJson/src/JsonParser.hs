@@ -1,4 +1,4 @@
-module JsonParser (parse) where
+module JsonParser (parse, JsonToken (..)) where
 
 import Debug.Trace (traceM)
 
@@ -34,20 +34,18 @@ possiblePasses StringPropertyValue DoubleQuote = Just AfterPropertyValue
 possiblePasses AfterPropertyValue RightCurlyBracket = Just End
 possiblePasses _ _ = Nothing
 
-parse :: String -> IO ()
+parse :: String -> Maybe [JsonToken]
 parse rawJson = do
-  let result = _parse (rawJson, Start)
-  case result of
-    Just _ -> putStrLn "Ok"
-    Nothing -> putStrLn "Not ok"
+  (_, _, tokens) <- _parse rawJson Start []
+  return tokens
   where
-    _parse :: (String, Location) -> Maybe ([Char], Location)
-    _parse (json, currentLocation) = do
+    _parse :: String -> Location -> [JsonToken] -> Maybe ([Char], Location, [JsonToken])
+    _parse json currentLocation tokens = do
       _ <- traceM ("Json: " ++ show json)
       _ <- traceM ("Current location: " ++ show currentLocation)
 
       case currentLocation of
-        End -> Just ("", End)
+        End -> Just ("", End, tokens)
         _ -> do
           (token, left) <- getNextToken json currentLocation
 
@@ -56,7 +54,7 @@ parse rawJson = do
 
           expectedNextLocation <- possiblePasses currentLocation token
 
-          _parse (left, expectedNextLocation)
+          _parse left expectedNextLocation (tokens ++ [token])
 
     getNextToken :: String -> Location -> Maybe (JsonToken, String)
     getNextToken json currentLocation = do

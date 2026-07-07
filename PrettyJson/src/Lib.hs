@@ -1,8 +1,16 @@
 module Lib
-    ( someFunc
-    ) where
+  ( someFunc,
+  )
+where
 
 import JsonParser
 
 someFunc :: IO ()
-someFunc = parse "{\"test\":\"value\"}"
+someFunc = do
+  let tokens =
+        parse
+          "{\
+          \\"test\":\
+          \\"value\"\
+          \}"
+  putStrLn (show tokens)

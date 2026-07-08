@@ -51,5 +51,45 @@ main =
 
                   assertEqual "" expected (JsonParser.parse json)
               )
+          ),
+        TestLabel
+          "Should parse single bool true property object"
+          ( TestCase
+              ( do
+                  let json = "{\"test\":true}"
+
+                  let expected =
+                        Just
+                          [ LeftCurlyBracket,
+                            DoubleQuote,
+                            Property "test",
+                            DoubleQuote,
+                            Colon,
+                            BooleanValue True,
+                            RightCurlyBracket
+                          ]
+
+                  assertEqual "" expected (JsonParser.parse json)
+              )
+          ),
+        TestLabel
+          "Should parse single bool false property object"
+          ( TestCase
+              ( do
+                  let json = "{\"test\":false}"
+
+                  let expected =
+                        Just
+                          [ LeftCurlyBracket,
+                            DoubleQuote,
+                            Property "test",
+                            DoubleQuote,
+                            Colon,
+                            BooleanValue False,
+                            RightCurlyBracket
+                          ]
+
+                  assertEqual "" expected (JsonParser.parse json)
+              )
           )
       ]

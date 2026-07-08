@@ -23,6 +23,7 @@ data JsonToken
   | Property String
   | StringValue String
   | NullValue
+  | BooleanValue Bool
   deriving (Eq, Ord, Show)
 
 possiblePasses :: Location -> JsonToken -> Maybe Location
@@ -33,6 +34,7 @@ possiblePasses PropertyName DoubleQuote = Just AfterPropertyName
 possiblePasses AfterPropertyName Colon = Just AfterColon
 possiblePasses AfterColon DoubleQuote = Just StringPropertyValue
 possiblePasses AfterColon NullValue = Just AfterPropertyValue
+possiblePasses AfterColon (BooleanValue _) = Just AfterPropertyValue
 possiblePasses StringPropertyValue (StringValue _) = Just StringPropertyValue
 possiblePasses StringPropertyValue DoubleQuote = Just AfterPropertyValue
 possiblePasses AfterPropertyValue RightCurlyBracket = Just End
@@ -73,7 +75,7 @@ parse rawJson = do
         ('}' : t, AfterPropertyValue) -> Just (RightCurlyBracket, t)
         (h : t, PropertyName) -> fmap (\x -> (Property $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
         (h : t, StringPropertyValue) -> fmap (\x -> (StringValue $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
-        (h : t, AfterColon) -> fmap (\x -> (NullValue, snd x)) $ getNull (h : t)
+        (h : t, AfterColon) -> getNotDoubleQuotedValue (h : t)
         _ -> Nothing
 
     getUntilDoubleQuote :: (String, String) -> Maybe (String, String)
@@ -84,14 +86,23 @@ parse rawJson = do
         ('"' : t) -> Just (value, "\"" ++ t)
         (h : t) -> getUntilDoubleQuote (value ++ [h], t)
 
-    getNull :: String -> Maybe (String, String)
+    getNotDoubleQuotedValue :: String -> Maybe (JsonToken, String)
+    getNotDoubleQuotedValue acc =
+      case (getNull acc) of
+        Just x -> Just x
+        Nothing -> getBoolean acc
+
+    getNull :: String -> Maybe (JsonToken, String)
     getNull acc =
       case (isPrefixOf "null" acc) of
-        True -> Just ("null", drop 4 acc)
+        True -> Just (NullValue, drop 4 acc)
         False -> Nothing
 
--- case acc of
---   [] -> Nothing -- Left "No \" found"
---   ['n', 'u', 'l', 'l'] -> Just (value, "\"")
---   ('"' : t) -> Just (value, "\"" ++ t)
---   (h : t) -> getUntilDoubleQuote (value ++ [h], t)
+    getBoolean :: String -> Maybe (JsonToken, String)
+    getBoolean acc =
+      case (isPrefixOf "true" acc) of
+        True -> Just (BooleanValue True, drop 4 acc)
+        False -> do
+          case (isPrefixOf "false" acc) of
+            True -> Just (BooleanValue False, drop 5 acc)
+            False -> Nothing

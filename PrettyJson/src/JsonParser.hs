@@ -1,5 +1,6 @@
 module JsonParser (parse, JsonToken (..)) where
 
+import Data.Char
 import Data.List (isPrefixOf)
 import Debug.Trace (traceM)
 
@@ -53,29 +54,39 @@ parse rawJson = do
       case currentLocation of
         End -> Just ("", End, tokens)
         _ -> do
-          (token, left) <- getNextToken json currentLocation
+          (maybeToken, left) <- getNextToken json currentLocation
 
-          _ <- traceM ("Next token: " ++ show token)
+          _ <- traceM ("Next token: " ++ show maybeToken)
           _ <- traceM ("Left: " ++ show left)
 
-          expectedNextLocation <- possiblePasses currentLocation token
+          case maybeToken of
+            Just token -> do
+              expectedNextLocation <- possiblePasses currentLocation token
 
-          _parse left expectedNextLocation (tokens ++ [token])
+              _parse left expectedNextLocation (tokens ++ [token])
+            Nothing ->
+              _parse left currentLocation (tokens)
 
-    getNextToken :: String -> Location -> Maybe (JsonToken, String)
+    getNextToken :: String -> Location -> Maybe (Maybe JsonToken, String)
     getNextToken json currentLocation = do
       case (json, currentLocation) of
         ([], _) -> Nothing
-        ('{' : t, Start) -> Just (LeftCurlyBracket, t)
-        ('"' : t, Object) -> Just (DoubleQuote, t)
-        ('"' : t, PropertyName) -> Just (DoubleQuote, t)
-        (':' : t, AfterPropertyName) -> Just (Colon, t)
-        ('"' : t, AfterColon) -> Just (DoubleQuote, t)
-        ('"' : t, StringPropertyValue) -> Just (DoubleQuote, t)
-        ('}' : t, AfterPropertyValue) -> Just (RightCurlyBracket, t)
-        (h : t, PropertyName) -> fmap (\x -> (Property $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
-        (h : t, StringPropertyValue) -> fmap (\x -> (StringValue $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
-        (h : t, AfterColon) -> getNotDoubleQuotedValue (h : t)
+        ('{' : t, Start) -> Just (Just LeftCurlyBracket, t)
+        (h : t, Start) | (isSpace h) -> Just (Nothing, t)
+        ('"' : t, Object) -> Just (Just DoubleQuote, t)
+        (h : t, Object) | (isSpace h) -> Just (Nothing, t)
+        ('"' : t, PropertyName) -> Just (Just DoubleQuote, t)
+        (':' : t, AfterPropertyName) -> Just (Just Colon, t)
+        (h : t, AfterPropertyName) | (isSpace h) -> Just (Nothing, t)
+        ('"' : t, AfterColon) -> Just (Just DoubleQuote, t)
+        (h : t, AfterColon) | (isSpace h) -> Just (Nothing, t)
+        ('"' : t, StringPropertyValue) -> Just (Just DoubleQuote, t)
+        ('}' : t, AfterPropertyValue) -> Just (Just RightCurlyBracket, t)
+        (h : t, AfterPropertyValue) | (isSpace h) -> Just (Nothing, t)
+        (h : t, PropertyName) -> fmap (\x -> (Just . Property $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
+        (h : t, StringPropertyValue) -> fmap (\x -> (Just . StringValue $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)        
+        (h : t, AfterColon) -> fmap (\x -> (Just $ fst x, snd x)) $ getNotDoubleQuotedValue (h : t)        
+        (h : t, End) | (isSpace h) -> Just (Nothing, t)
         _ -> Nothing
 
     getUntilDoubleQuote :: (String, String) -> Maybe (String, String)

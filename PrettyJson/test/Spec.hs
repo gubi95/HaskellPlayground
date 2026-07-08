@@ -11,6 +11,27 @@ main =
   runTestTT $
     TestList
       [ TestLabel
+          "Should respect spaces in json"
+          ( TestCase
+              ( do
+                  let json = " { \" test \" : \" value \" }"
+
+                  let expected =
+                        Just
+                          [ LeftCurlyBracket,
+                            DoubleQuote,
+                            Property " test ",
+                            DoubleQuote,
+                            Colon,
+                            DoubleQuote,
+                            StringValue " value ",
+                            DoubleQuote,
+                            RightCurlyBracket
+                          ]
+
+                  assertEqual "" expected (JsonParser.parse json)
+              )
+          ),TestLabel
           "Should parse single string property object"
           ( TestCase
               ( do

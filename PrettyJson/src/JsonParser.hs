@@ -1,5 +1,6 @@
 module JsonParser (parse, JsonToken (..)) where
 
+import Data.List (isPrefixOf)
 import Debug.Trace (traceM)
 
 data Location
@@ -10,6 +11,7 @@ data Location
   | AfterPropertyName
   | AfterColon
   | StringPropertyValue
+  | NullPropertyValue
   | AfterPropertyValue
   deriving (Eq, Ord, Show)
 
@@ -20,6 +22,7 @@ data JsonToken
   | Colon
   | Property String
   | StringValue String
+  | NullValue
   deriving (Eq, Ord, Show)
 
 possiblePasses :: Location -> JsonToken -> Maybe Location
@@ -29,6 +32,7 @@ possiblePasses PropertyName (Property _) = Just PropertyName
 possiblePasses PropertyName DoubleQuote = Just AfterPropertyName
 possiblePasses AfterPropertyName Colon = Just AfterColon
 possiblePasses AfterColon DoubleQuote = Just StringPropertyValue
+possiblePasses AfterColon NullValue = Just AfterPropertyValue
 possiblePasses StringPropertyValue (StringValue _) = Just StringPropertyValue
 possiblePasses StringPropertyValue DoubleQuote = Just AfterPropertyValue
 possiblePasses AfterPropertyValue RightCurlyBracket = Just End
@@ -69,6 +73,7 @@ parse rawJson = do
         ('}' : t, AfterPropertyValue) -> Just (RightCurlyBracket, t)
         (h : t, PropertyName) -> fmap (\x -> (Property $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
         (h : t, StringPropertyValue) -> fmap (\x -> (StringValue $ fst x, snd x)) $ getUntilDoubleQuote ("", h : t)
+        (h : t, AfterColon) -> fmap (\x -> (NullValue, snd x)) $ getNull (h : t)
         _ -> Nothing
 
     getUntilDoubleQuote :: (String, String) -> Maybe (String, String)
@@ -78,3 +83,15 @@ parse rawJson = do
         ['"'] -> Just (value, "\"")
         ('"' : t) -> Just (value, "\"" ++ t)
         (h : t) -> getUntilDoubleQuote (value ++ [h], t)
+
+    getNull :: String -> Maybe (String, String)
+    getNull acc =
+      case (isPrefixOf "null" acc) of
+        True -> Just ("null", drop 4 acc)
+        False -> Nothing
+
+-- case acc of
+--   [] -> Nothing -- Left "No \" found"
+--   ['n', 'u', 'l', 'l'] -> Just (value, "\"")
+--   ('"' : t) -> Just (value, "\"" ++ t)
+--   (h : t) -> getUntilDoubleQuote (value ++ [h], t)
